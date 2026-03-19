@@ -11,8 +11,25 @@
         <Tab Title="Etusivu">
             <ShellContent ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />
         </Tab>
+        
         <Tab Title="Mökkien hallinta">
             <ShellContent ContentTemplate="{DataTemplate views:MokkiPage}" Route="MokkiPage"/>
+        </Tab>
+        
+        <Tab Title="Alueiden hallinta">
+            <ShellContent ContentTemplate="{DataTemplate views:AluePage}" Route="AluePage"/>
+        </Tab>
+        
+        <Tab Title="Palveluiden hallinta">
+            <ShellContent ContentTemplate="{DataTemplate views:PalveluPage}" Route="PalveluPage"/>
+        </Tab>
+        
+        <Tab Title="Asiakasvarausten hallinta">
+            <ShellContent ContentTemplate="{DataTemplate views:AsiakasPage}" Route="AsiakasPage"/>
+        </Tab>
+        
+        <Tab Title="Laskujen hallinta">
+            <ShellContent ContentTemplate="{DataTemplate views:LaskuPage}" Route="LaskuPage"/>
         </Tab>
     </FlyoutItem>
 
