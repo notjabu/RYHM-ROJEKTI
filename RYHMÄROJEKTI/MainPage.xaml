@@ -10,9 +10,8 @@
         Aspect="AspectFill"
         />
 
-    <Label 
-        Text="VILLAGE NEWBIES"
-        />
-       </Grid>
+        <Label Text="VILLAGE NEWBIES"
+               FontSize="120"/>
+    </Grid>
 
 </ContentPage>
