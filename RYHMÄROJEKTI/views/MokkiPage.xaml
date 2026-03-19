@@ -27,9 +27,8 @@
             Margin="5" 
             Grid.Row="3"
             />
-    </Grid>
 
-    <!-- Listan järjestys miten luodut jutut näkyvät sivulla listana (saa muokata miten haluaa :D) -->
+        <!-- Listan järjestys miten luodut jutut näkyvät sivulla listana (saa muokata miten haluaa :D) -->
         <ListView x:Name="MokitListView" 
                   Grid.Row="1" 
                   ItemsSource="{Binding Mokit}" 
@@ -54,4 +53,5 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+    </Grid>
 </ContentPage>
