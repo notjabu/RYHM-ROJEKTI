@@ -7,8 +7,27 @@
     Title="RYHMÄROJEKTI">
 
     <ShellContent
-        Title="Home"
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
+    <Shell.TitleView>
+        <Grid ColumnDefinitions="Auto, Auto, Auto, Auto, Auto, *"
+              Padding="8"
+              BackgroundColor="LightGray">
+            <Button Text="Mökkien hallinta"
+                    FlyoutItem.IsVisible="True"/>
+            <Button Grid.Column="1"
+                    Text="Alueiden hallinta"
+                    FlyoutItem.IsVisible="True"/>
+            <Button Grid.Column="2"
+                    Text="Asiakasvarausten hallinta"
+                    FlyoutItem.IsVisible="True"/>
+            <Button Grid.Column="3"
+                    Text="Laskujen hallinta"
+                    FlyoutItem.IsVisible="True"/>
+            <Button Grid.Column="4"
+                    Text="Palveluiden hallinta"
+                    FlyoutItem.IsVisible="True"/>
+        </Grid>
+    </Shell.TitleView>
 
 </Shell>
