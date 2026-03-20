@@ -3,4 +3,29 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RYHMÄROJEKTI.views.AluePageEdit"
              Title="Lisää alue">
-    
+    <ScrollView>
+        <VerticalStackLayout Padding="15" Spacing="12">
+
+            <Label Text="Lisää uusi alue / mökki" FontAttributes="Bold" FontSize="18"/>
+
+            <Label Text="Nimi" />
+            <Entry x:Name="NimiEntry" Placeholder="Mökin tai alueen nimi"/>
+
+            <Label Text="Sijainti" />
+            <Entry x:Name="SijaintiEntry" Placeholder="Kunta / osoite"/>
+
+            <Label Text="Kuvaus" />
+            <Editor x:Name="KuvausEditor" HeightRequest="120" Placeholder="Kirjoita kuvaus..."/>
+
+            <Label Text="Kuva" />
+            <Image x:Name="KuvaImage" HeightRequest="180" Aspect="AspectFill" BackgroundColor="#eee"/>
+
+         
+
+            <HorizontalStackLayout Spacing="10">
+     
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
