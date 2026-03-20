@@ -80,6 +80,9 @@
 	  <MauiXaml Update="views\MokkiPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="views\MokkiPageEdit.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="views\PalveluPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

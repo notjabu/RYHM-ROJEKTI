@@ -28,7 +28,9 @@
                 Grid.Row="2"
                 />
 
-            <Button Text="Poista valittu mökki" 
+            <Button Text="Poista valittu mökki"
+                    BackgroundColor="Red"
+                    TextColor="White"
                 Command="{Binding PoistaMokkiCommand}" 
                 Margin="5" 
                 Grid.Row="3"
@@ -66,11 +68,35 @@
         <!-- Tietoikkuna -->
         <StackLayout Grid.Column="2"
                      IsVisible="{Binding ValittuMokki, Converter={StaticResource NullToBoolConverter}}">
+
+            <Frame HeightRequest="200"
+        CornerRadius="10"
+        IsClippedToBounds="True">
+                <Grid>
+                    <Image Source="{Binding ValittuMokki.Kuva}" 
+                Aspect="AspectFill"/>
+                    <Label Text="Ei kuvaa" 
+                IsVisible="{Binding ValittuMokki.Kuva, Converter={StaticResource NullToBoolConverter}}"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                TextColor="Gray"/>
+                </Grid>
+            </Frame>
+            
             <Label Text="Nimi"/>
             <Entry Text="{Binding ValittuMokki.Nimi}"/>
 
-            <Label Text="Osoite"/>
-            <Entry Text="{Binding ValittuMokki.Osoite}"/>
+            <Label Text="Katuosoite"/>
+            <Entry Text="{Binding ValittuMokki.Katuosoite}"/>
+
+            <Label Text="Postinumero"/>
+            <Entry Text="{Binding ValittuMokki.Postinumero}"/>
+
+            <Label Text="Postitoimipaikka"/>
+            <Entry Text="{Binding ValittuMokki.Postitoimipaikka}"/>
+
+            <Label Text="Kuvaus"/>
+            <Entry Text="{Binding ValittuMokki.Kuvaus}"/>
 
         </StackLayout>
     </Grid>
