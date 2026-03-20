@@ -68,6 +68,9 @@
 	  <MauiXaml Update="views\AluePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="views\AluePageEdit.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="views\AsiakasPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

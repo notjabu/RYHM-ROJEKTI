@@ -1,57 +1,65 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="RYHMÄROJEKTI.views.AluePage"
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+             x:Class="RYHMÄROJEKTI.views.AluePage" 
              Title="AluePage">
-    <Grid RowDefinitions="Auto, Auto, Auto, Auto, *" ColumnDefinitions="Auto, *">
 
-        <SearchBar Placeholder="Hae alueita"
-            Margin="5" 
-            Grid.Row="0"
-            />
+    <Grid RowDefinitions="Auto, Auto, Auto, Auto, *, Auto"  
+          ColumnDefinitions="200, *">
 
-        <Button Text="Lisää alue" 
-            Command="{Binding LisaaMokkiCommand}" 
-            Margin="5" 
-            Grid.Row="1"
-            />
+        <SearchBar Placeholder="Hae alueita" 
+                   Margin="5"  
+                   Grid.Row="0" 
+                   Grid.ColumnSpan="2" 
+                   FontSize="20"/>
 
-        <Button Text="Muokkaa valittua" 
-            Command="{Binding MuokkaaMokkiaCommand}" 
-            Margin="5" 
-            Grid.Row="2"
-            />
 
-        <Button Text="Poista valittu alue" 
-            Command="{Binding PoistaMokkiCommand}" 
-            Margin="5" 
-            Grid.Row="3"
-            />
 
-        <!-- Listan järjestys miten luodut jutut näkyvät sivulla listana (saa muokata miten haluaa :D) -->
-        <ListView x:Name="AlueetListView" 
-                  Grid.Row="1" 
-                  ItemsSource="{Binding Alueet}" 
-                  SelectedItem="{Binding ValittuAlue}" 
-                  >
+        <Button Text="Lisää uusi alue"  
+                Command="{Binding LisaaMokkiCommand}"  
+                Margin="5"  
+                Grid.Row="1" 
+                Grid.Column="0" 
+                HorizontalOptions="Fill" 
+                FontSize="20"/>
+
+        <Button Text="Muokkaa valittua aluetta"  
+                Command="{Binding MuokkaaMokkiaCommand}"  
+                Margin="5"  
+                Grid.Row="2" 
+                Grid.Column="0" 
+                HorizontalOptions="Fill" 
+                FontSize="20"/>
+
+        <Button Text="Poista valittu alue"  
+                Command="{Binding PoistaMokkiCommand}"  
+                Margin="5"  
+                Grid.Row="3" 
+                Grid.Column="0" 
+                HorizontalOptions="Fill" 
+                FontSize="20"/>
+
+        <ListView x:Name="MokitListView"  
+                  Grid.Row="4"  
+                  Grid.ColumnSpan="2" 
+                  ItemsSource="{Binding Mokit}"  
+                  SelectedItem="{Binding ValittuMokki}" 
+                  HasUnevenRows="True">
 
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
-                        <Grid ColumnDefinitions="*,*,*">
-
-                            <Label Grid.Column="0" 
-                                   Text="{Binding Alue}" 
-                                   FontAttributes="Bold" 
-                                   />
-
-                            <Label Grid.Column="1" 
-                                   Text="{Binding Sijainti}" 
-                                   />
+                        <Grid ColumnDefinitions="*,*" Padding="10">
+                            <Label Grid.Column="0"  
+                                   Text="{Binding Mokki}"  
+                                   FontAttributes="Bold"/>
+                            <Label Grid.Column="1"  
+                                   Text="{Binding Sijainti}"/>
                         </Grid>
                     </ViewCell>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
     </Grid>
-</ContentPage>
+</ContentPage> 

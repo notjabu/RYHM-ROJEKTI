@@ -7,7 +7,7 @@
     xmlns:views="clr-namespace:RYHMÄROJEKTI.views"
     Title="RYHMÄROJEKTI">
 
-    <FlyoutItem FlyoutDisplayOptions="AsMultipleItems">
+    <FlyoutItem>
         <Tab Title="Etusivu">
             <ShellContent ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />
         </Tab>
@@ -16,8 +16,9 @@
             <ShellContent ContentTemplate="{DataTemplate views:MokkiPage}" Route="MokkiPage"/>
         </Tab>
         
-        <Tab Title="Alueiden hallinta">
-            <ShellContent ContentTemplate="{DataTemplate views:AluePage}" Route="AluePage"/>
+        <Tab Title="Alueiden hallinta" FlyoutDisplayOptions="AsMultipleItems">
+            <ShellContent Title="Alueet" ContentTemplate="{DataTemplate views:AluePage}" Route="AluePage"/>
+            <ShellContent Title="Alueitten hallinta" ContentTemplate="{DataTemplate views:AluePageEdit}" Route="AluePageEdit"/>
         </Tab>
         
         <Tab Title="Palveluiden hallinta">
