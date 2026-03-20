@@ -18,11 +18,15 @@
 
             <Button Text="Lisää uusi" 
                     Command="{Binding LisaaAlueCommand}"
+                    Clicked="LisaaAlue_Clicked"
                     BackgroundColor="#512BD4"
                     TextColor="White"/>
 
-            <Button Text="Muokkaa" 
-                    Command="{Binding MuokkaaAluettaCommand}"/>
+            <!-- Muokkaa button: temporary debug version without Command -->
+            <Button Text="Muokkaa"
+                    Clicked="Muokkaa_Clicked"
+                    BackgroundColor="#f0f0f0"
+                    TextColor="Black"/>
 
             <Button Text="Poista" 
                     Command="{Binding PoistaAlueCommand}"
