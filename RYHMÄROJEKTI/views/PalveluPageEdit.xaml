@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RYHMÄROJEKTI.views.PalveluPageEdit"
+             Title="PalveluPageEdit">
+    
+    <ScrollView>
+        <VerticalStackLayout Padding="15" Spacing="12">
+            <Button Text="Palaa"
+                    Pressed="PalaaPalveluPageClicked"/>
+
+            <Label Text="Lisää uusi Palvelu" FontAttributes="Bold" FontSize="18"/>
+
+            <Label Text="Nimi" />
+            <Entry x:Name="NimiEntry" Placeholder="Palvelun nimi"/>
+
+            <Label Text="Sijainti" />
+            <Entry x:Name="SijaintiEntry" Placeholder="Kunta / osoite"/>
+
+            <Label Text="Kuvaus" />
+            <Editor x:Name="KuvausEditor" HeightRequest="120" Placeholder="Kirjoita kuvaus..."/>
+
+            <Label Text="Kuva" />
+            <Image x:Name="KuvaImage" HeightRequest="180" Aspect="AspectFill" BackgroundColor="#eee"/>
+
+
+
+            <HorizontalStackLayout Spacing="10">
+
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

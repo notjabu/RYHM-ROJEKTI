@@ -23,7 +23,8 @@
         </Tab>
         
         <Tab Title="Palveluiden hallinta">
-            <ShellContent ContentTemplate="{DataTemplate views:PalveluPage}" Route="PalveluPage"/>
+            <ShellContent Title="Palvelut" ContentTemplate="{DataTemplate views:PalveluPage}" Route="PalveluPage"/>
+            <ShellContent Title="Palveluiden hallinta" ContentTemplate="{DataTemplate views:AluePageEdit}" Route="PalveluPageEdit"/>
         </Tab>
         
         <Tab Title="Asiakasvarausten hallinta">
