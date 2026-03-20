@@ -3,10 +3,55 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RYHMÄROJEKTI.views.AluePage"
              Title="AluePage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Alueet"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+    <Grid RowDefinitions="Auto, Auto, Auto, Auto, *" ColumnDefinitions="Auto, *">
+
+        <SearchBar Placeholder="Hae alueita"
+            Margin="5" 
+            Grid.Row="0"
+            />
+
+        <Button Text="Lisää alue" 
+            Command="{Binding LisaaMokkiCommand}" 
+            Margin="5" 
+            Grid.Row="1"
+            />
+
+        <Button Text="Muokkaa valittua" 
+            Command="{Binding MuokkaaMokkiaCommand}" 
+            Margin="5" 
+            Grid.Row="2"
+            />
+
+        <Button Text="Poista valittu alue" 
+            Command="{Binding PoistaMokkiCommand}" 
+            Margin="5" 
+            Grid.Row="3"
+            />
+
+        <!-- Listan järjestys miten luodut jutut näkyvät sivulla listana (saa muokata miten haluaa :D) -->
+        <ListView x:Name="AlueetListView" 
+                  Grid.Row="1" 
+                  ItemsSource="{Binding Alueet}" 
+                  SelectedItem="{Binding ValittuAlue}" 
+                  >
+
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Grid ColumnDefinitions="*,*,*">
+
+                            <Label Grid.Column="0" 
+                                   Text="{Binding Alue}" 
+                                   FontAttributes="Bold" 
+                                   />
+
+                            <Label Grid.Column="1" 
+                                   Text="{Binding Sijainti}" 
+                                   />
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
 </ContentPage>
