@@ -1,3 +1,6 @@
+using System;
+using Microsoft.Maui.Controls;
+
 namespace RYHMÄROJEKTI.views;
 
 public partial class AluePage : ContentPage

@@ -110,8 +110,6 @@
                         HeightRequest="100"
                         IsReadOnly="True"/>
 
-            
-
             </VerticalStackLayout>
         </ScrollView>
 
