@@ -1,15 +1,20 @@
-using RYHMÄROJEKTI.Models;
 using Microsoft.Maui.Storage;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using RYHMÄROJEKTI.Models;
 
 namespace RYHMÄROJEKTI.views;
 
 public partial class MokkiPageEdit : ContentPage
 {
     private readonly Mokki _editing;
-    public Mokki Result { get; private set; }
+    private readonly TaskCompletionSource<Mokki?> _tcs = new();
+
+    // External caller can await this task to get the result (or null if cancelled)
+    public Task<Mokki?> Completion => _tcs.Task;
+
+    public Mokki? Result { get; private set; }
 
     public MokkiPageEdit(Mokki mokki)
     {
@@ -30,7 +35,6 @@ public partial class MokkiPageEdit : ContentPage
             if (result == null)
                 return;
 
-            // Kopioidaan valittu kuva sovelluksen välimuistiin ja asetetaan polku propertyyn
             var stream = await result.OpenReadAsync();
             var destPath = Path.Combine(FileSystem.CacheDirectory, result.FileName);
             using (var dest = File.OpenWrite(destPath))
@@ -38,7 +42,7 @@ public partial class MokkiPageEdit : ContentPage
                 await stream.CopyToAsync(dest);
             }
 
-            _editing.Kuva = destPath; // MAUI Image osaa käyttää tiedostopolkuja
+            _editing.Kuva = destPath;
         }
         catch (Exception ex)
         {
@@ -46,16 +50,17 @@ public partial class MokkiPageEdit : ContentPage
         }
     }
 
-    async void OnSaveClicked(object sender, EventArgs e)
+    async void OnTallennaClicked(object sender, EventArgs e)
     {
-        // Jos luotiin uusi olio, asetetaan Result; muokkauksissa kutsuja hyödyntää olion muutoksia suoraan
         Result = _editing;
+        _tcs.TrySetResult(_editing);
         await Navigation.PopAsync();
     }
 
-    async void OnCancelClicked(object sender, EventArgs e)
+    async void OnPeruutaClicked(object sender, EventArgs e)
     {
         Result = null;
+        _tcs.TrySetResult(null);
         await Navigation.PopAsync();
     }
 }
