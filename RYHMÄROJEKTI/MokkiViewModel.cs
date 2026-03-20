@@ -1,10 +1,11 @@
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
 using RYHMÄROJEKTI.Models;
 using RYHMÄROJEKTI.views;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace RYHMÄROJEKTI.ViewModels
 {
@@ -25,11 +26,13 @@ namespace RYHMÄROJEKTI.ViewModels
             {
                 var editPage = new MokkiPageEdit(new Mokki());
                 await Application.Current.MainPage.Navigation.PushAsync(editPage);
-                // odota kunnes sivulta palataan — Result asetetaan Save-painikkeella
-                // kun sivu suljetaan, lisätään, jos käyttäjä tallensi
-                if (editPage.Result != null)
+
+                // Wait for the edit page to signal completion
+                var result = await editPage.Completion;
+                if (result != null)
                 {
-                    Mokit.Add(editPage.Result);
+                    Mokit.Add(result);
+                    ValittuMokki = result; // select it so Tietoikkuna shows details
                 }
             });
 
@@ -38,7 +41,14 @@ namespace RYHMÄROJEKTI.ViewModels
                 if (ValittuMokki == null) return;
                 var editPage = new MokkiPageEdit(ValittuMokki);
                 await Application.Current.MainPage.Navigation.PushAsync(editPage);
-                // muokkaukset tehdään suoraan ValittuMokki-olioon (reference)
+
+                // Optionally await completion if you want to react (e.g., refresh selection).
+                var edited = await editPage.Completion;
+                if (edited != null)
+                {
+                    // ValittuMokki is the same reference; ensure UI sees changes
+                    ValittuMokki = edited;
+                }
             });
 
             PoistaMokkiCommand = new Command(() =>

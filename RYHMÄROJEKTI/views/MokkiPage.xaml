@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RYHMÄROJEKTI.views.MokkiPage"
              Title="MokkiPage">
-    <Grid ColumnDefinitions="Auto, Auto,2*"
+    <Grid ColumnDefinitions="Auto, *,2*"
           Padding="2"
           ColumnSpacing="10">
         <!-- Napit -->
@@ -36,35 +36,35 @@
                 Grid.Row="3"
                 />
         </VerticalStackLayout>
-       
 
-        <!-- Listan järjestys miten luodut jutut näkyvät sivulla listana (saa muokata miten haluaa :D) -->
+
+        <!-- Listan järjestys -->
         <ListView x:Name="MokitListView" 
                   Grid.Column="1" 
                   ItemsSource="{Binding Mokit}" 
                   SelectedItem="{Binding ValittuMokki}"
-                  SelectionMode="Single"
-                  >
+                  SelectionMode="Single">
 
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
-                        <Grid ColumnDefinitions="*,*,*">
+                        <Grid ColumnDefinitions="*,*">
 
+                            <!-- Korjattu binding: käytä Mokki-luokan propertyja -->
                             <Label Grid.Column="0" 
-                                   Text="{Binding Mokki}" 
+                                   Text="{Binding Nimi}" 
                                    FontAttributes="Bold" 
                                    />
 
                             <Label Grid.Column="1" 
-                                   Text="{Binding Sijainti}" 
+                                   Text="{Binding Postitoimipaikka}" 
                                    />
                         </Grid>
                     </ViewCell>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        
+
         <!-- Tietoikkuna -->
         <StackLayout Grid.Column="2"
                      IsVisible="{Binding ValittuMokki, Converter={StaticResource NullToBoolConverter}}">
@@ -82,7 +82,7 @@
                 TextColor="Gray"/>
                 </Grid>
             </Frame>
-            
+
             <Label Text="Nimi"/>
             <Entry Text="{Binding ValittuMokki.Nimi}"/>
 

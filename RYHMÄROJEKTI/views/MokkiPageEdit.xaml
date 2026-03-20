@@ -1,23 +1,35 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RYHMÄROJEKTI.views.MokkiPageEdit"
              Title="Mökin lisäys / muokkaus">
-    
+
     <ScrollView>
         <VerticalStackLayout Padding="12" Spacing="10">
             <Image HeightRequest="200" Aspect="AspectFill" Source="{Binding Kuva}" />
             <Button Text="Valitse kuva" Clicked="OnPickImageClicked" />
-            
+
+            <Label Text="Nimi" FontAttributes="Bold" />
+            <!-- Bindataan suoraan Mokki-olion propertyihin -->
+            <Entry x:Name="NimiEntry" Text="{Binding Nimi}" Placeholder="Mökin nimi" />
+
             <Label Text="Osoite" FontAttributes="Bold" />
-            
-            <Entry x:Name="KatuEntry" Placeholder="Katuosoite" />
-            
-            <Entry x:Name="PostinumeroEntry" Placeholder="Postinumero" />
-            
-            <Entry x:Name="PostitoimipaikkaEntry" Placeholder="Postitoimipaikka" />
-            
+            <Entry x:Name="KatuEntry" Text="{Binding Katuosoite}" Placeholder="Katuosoite" />
+
+            <Entry x:Name="PostinumeroEntry" Text="{Binding Postinumero}" Placeholder="Postinumero" />
+
+            <Entry x:Name="PostitoimipaikkaEntry" Text="{Binding Postitoimipaikka}" Placeholder="Postitoimipaikka" />
+
+            <Label Text="Kuvaus" FontAttributes="Bold" />
+            <Entry x:Name="KuvausEntry" Text="{Binding Kuvaus}" Placeholder="Lyhyt kuvaus" />
+
+            <HorizontalStackLayout Spacing="10">
+                <!-- Clicked-nimet vastaamaan code-behindia -->
+                <Button Text="Tallenna" Clicked="OnTallennaClicked"/>
+                <Button Text="Peruuta" Clicked="OnPeruutaClicked"/>
+            </HorizontalStackLayout>
+
         </VerticalStackLayout>
+
     </ScrollView>
 
 </ContentPage>
