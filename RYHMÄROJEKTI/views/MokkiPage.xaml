@@ -6,7 +6,7 @@
     <Grid ColumnDefinitions="Auto, *,2*"
           Padding="10"
           ColumnSpacing="10">
-
+        <!-- Napit -->
         <VerticalStackLayout Grid.Column="0"
                              Spacing="10"
                              VerticalOptions="Start">
@@ -62,6 +62,8 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        
+        <!-- Tietoikkuna -->
         <StackLayout Grid.Column="2"
                      IsVisible="{Binding ValittuMokki, Converter={StaticResource NullToBoolConverter}}">
             <Label Text="Nimi"/>
