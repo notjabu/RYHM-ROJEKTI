@@ -20,7 +20,7 @@
             <Label Text="Kuva" />
             <Image x:Name="KuvaImage" HeightRequest="180" Aspect="AspectFill" BackgroundColor="#eee"/>
 
-            <Button Text="Valitse kuva" Clicked="OnPickImageClicked"/>
+            <Button Text="Valitse kuva" Clicked="OnSelectImageClicked" />
             
             <HorizontalStackLayout Spacing="10">
                 <Button Text="Tallenna" Clicked="OnSaveClicked" BackgroundColor="#512BD4" TextColor="White"/>
