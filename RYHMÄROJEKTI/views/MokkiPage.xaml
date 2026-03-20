@@ -3,36 +3,45 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RYHMÄROJEKTI.views.MokkiPage"
              Title="MokkiPage">
-    <Grid RowDefinitions="Auto, Auto, Auto, Auto, *" ColumnDefinitions="Auto, *">
+    <Grid ColumnDefinitions="Auto, *,2*"
+          Padding="10"
+          ColumnSpacing="10">
 
-        <SearchBar Placeholder="Hae mökkejä"
-            Margin="5" 
-            Grid.Row="0"
-            />
+        <VerticalStackLayout Grid.Column="0"
+                             Spacing="10"
+                             VerticalOptions="Start">
 
-        <Button Text="Lisää Mökki" 
-            Command="{Binding LisaaMokkiCommand}" 
-            Margin="5" 
-            Grid.Row="1"
-            />
+            <SearchBar Placeholder="Hae mökkejä"
+                Margin="5" 
+                Grid.Row="0"
+                />
 
-        <Button Text="Muokkaa valittua" 
-            Command="{Binding MuokkaaMokkiaCommand}" 
-            Margin="5" 
-            Grid.Row="2"
-            />
+            <Button Text="Lisää Mökki" 
+                Command="{Binding LisaaMokkiCommand}" 
+                Margin="5" 
+                Grid.Row="1"
+                />
 
-        <Button Text="Poista valittu mökki" 
-            Command="{Binding PoistaMokkiCommand}" 
-            Margin="5" 
-            Grid.Row="3"
-            />
+            <Button Text="Muokkaa valittua" 
+                Command="{Binding MuokkaaMokkiaCommand}" 
+                Margin="5" 
+                Grid.Row="2"
+                />
+
+            <Button Text="Poista valittu mökki" 
+                Command="{Binding PoistaMokkiCommand}" 
+                Margin="5" 
+                Grid.Row="3"
+                />
+        </VerticalStackLayout>
+       
 
         <!-- Listan järjestys miten luodut jutut näkyvät sivulla listana (saa muokata miten haluaa :D) -->
         <ListView x:Name="MokitListView" 
-                  Grid.Row="1" 
+                  Grid.Column="1" 
                   ItemsSource="{Binding Mokit}" 
-                  SelectedItem="{Binding ValittuMokki}" 
+                  SelectedItem="{Binding ValittuMokki}"
+                  SelectionMode="Single"
                   >
 
             <ListView.ItemTemplate>
@@ -53,5 +62,14 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        <StackLayout Grid.Column="2"
+                     IsVisible="{Binding ValittuMokki, Converter={StaticResource NullToBoolConverter}}">
+            <Label Text="Nimi"/>
+            <Entry Text="{Binding ValittuMokki.Nimi}"/>
+
+            <Label Text="Osoite"/>
+            <Entry Text="{Binding ValittuMokki.Osoite}"/>
+
+        </StackLayout>
     </Grid>
 </ContentPage>
