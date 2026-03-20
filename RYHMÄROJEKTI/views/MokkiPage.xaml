@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RYHMÄROJEKTI.views.MokkiPage"
              Title="MokkiPage">
-    <Grid ColumnDefinitions="Auto, Auto,2*"
+    <Grid ColumnDefinitions="Auto, *,2*"
           Padding="2"
           ColumnSpacing="10">
         <!-- Napit -->
@@ -28,49 +28,75 @@
                 Grid.Row="2"
                 />
 
-            <Button Text="Poista valittu mökki" 
+            <Button Text="Poista valittu mökki"
+                    BackgroundColor="Red"
+                    TextColor="White"
                 Command="{Binding PoistaMokkiCommand}" 
                 Margin="5" 
                 Grid.Row="3"
                 />
         </VerticalStackLayout>
-       
 
-        <!-- Listan järjestys miten luodut jutut näkyvät sivulla listana (saa muokata miten haluaa :D) -->
+
+        <!-- Listan järjestys -->
         <ListView x:Name="MokitListView" 
                   Grid.Column="1" 
                   ItemsSource="{Binding Mokit}" 
                   SelectedItem="{Binding ValittuMokki}"
-                  SelectionMode="Single"
-                  >
+                  SelectionMode="Single">
 
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
-                        <Grid ColumnDefinitions="*,*,*">
+                        <Grid ColumnDefinitions="*,*">
 
+                            <!-- Korjattu binding: käytä Mokki-luokan propertyja -->
                             <Label Grid.Column="0" 
-                                   Text="{Binding Mokki}" 
+                                   Text="{Binding Nimi}" 
                                    FontAttributes="Bold" 
                                    />
 
                             <Label Grid.Column="1" 
-                                   Text="{Binding Sijainti}" 
+                                   Text="{Binding Postitoimipaikka}" 
                                    />
                         </Grid>
                     </ViewCell>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        
+
         <!-- Tietoikkuna -->
         <StackLayout Grid.Column="2"
                      IsVisible="{Binding ValittuMokki, Converter={StaticResource NullToBoolConverter}}">
+
+            <Frame HeightRequest="200"
+        CornerRadius="10"
+        IsClippedToBounds="True">
+                <Grid>
+                    <Image Source="{Binding ValittuMokki.Kuva}" 
+                Aspect="AspectFill"/>
+                    <Label Text="Ei kuvaa" 
+                IsVisible="{Binding ValittuMokki.Kuva, Converter={StaticResource NullToBoolConverter}}"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                TextColor="Gray"/>
+                </Grid>
+            </Frame>
+
             <Label Text="Nimi"/>
             <Entry Text="{Binding ValittuMokki.Nimi}"/>
 
-            <Label Text="Osoite"/>
-            <Entry Text="{Binding ValittuMokki.Osoite}"/>
+            <Label Text="Katuosoite"/>
+            <Entry Text="{Binding ValittuMokki.Katuosoite}"/>
+
+            <Label Text="Postinumero"/>
+            <Entry Text="{Binding ValittuMokki.Postinumero}"/>
+
+            <Label Text="Postitoimipaikka"/>
+            <Entry Text="{Binding ValittuMokki.Postitoimipaikka}"/>
+
+            <Label Text="Kuvaus"/>
+            <Entry Text="{Binding ValittuMokki.Kuvaus}"/>
 
         </StackLayout>
     </Grid>

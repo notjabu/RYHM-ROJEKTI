@@ -3,10 +3,116 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RYHMÄROJEKTI.views.PalveluPage"
              Title="PalveluPage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Palvelut"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+    
+    <Grid ColumnDefinitions="Auto, *, 2*"
+          Padding="10"
+          ColumnSpacing="15">
+
+        <!-- Vasen palsta: Haku ja toiminnot -->
+        <VerticalStackLayout Grid.Column="0"
+                            Spacing="10"
+                            WidthRequest="150">
+
+            <SearchBar Placeholder="Hae palveluita"
+                       Margin="0,0,0,10"/>
+
+            <Button Text="Lisää uusi" 
+                    Command="{Binding LisaaPalveluCommand}"
+                    BackgroundColor="#512BD4"
+                    TextColor="White"/>
+
+            <Button Text="Muokkaa" 
+                    Pressed="MuokkaaPalveluClicked"/>
+
+            <Button Text="Poista" 
+                    Command="{Binding PoistaPalveluCommand}"
+                    BackgroundColor="#E74C3C"
+                    TextColor="White"/>
+        </VerticalStackLayout>
+
+        <!-- Keskellä: Palveluluettelo -->
+        <VerticalStackLayout Grid.Column="1" Spacing="10">
+
+            <Label Text="Kaikki Palvelut" 
+                   FontAttributes="Bold" 
+                   FontSize="16"/>
+
+            <ListView ItemsSource="{Binding Palvelut}"
+                      SelectedItem="{Binding ValittuPalvelu}"
+                      SelectionMode="Single"
+                      HasUnevenRows="True">
+
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Grid Padding="10" 
+                                  ColumnDefinitions="Auto,*" 
+                                  ColumnSpacing="10">
+
+                                <!-- Pieni thumbnail -->
+                                <Frame Grid.Column="0" 
+                                       WidthRequest="40" 
+                                       HeightRequest="40" 
+                                       CornerRadius="20"
+                                       IsClippedToBounds="True">
+                                    <Image Source="{Binding Kuva}" 
+                                           Aspect="AspectFill"/>
+                                </Frame>
+
+                                <!-- Nimi -->
+                                <Label Grid.Column="1" 
+                                       Text="{Binding Nimi}" 
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+        </VerticalStackLayout>
+
+        <!-- Oikea palsta: Valitun alueen täydet tiedot -->
+        <ScrollView Grid.Column="2">
+            <VerticalStackLayout Spacing="10"
+                                 Padding="10"
+                                 IsVisible="{Binding ValittuAlue, Converter={StaticResource NullToBoolConverter}}">
+
+                <!-- Kuva-alue -->
+                <Frame HeightRequest="200"
+                       CornerRadius="10"
+                       IsClippedToBounds="True">
+                    <Grid>
+                        <Image Source="{Binding ValittuAlue.Kuva}"
+                               Aspect="AspectFill"/>
+
+                        <Label Text="Ei kuvaa" 
+                               IsVisible="{Binding ValittuAlue.Kuva, Converter={StaticResource NullToBoolConverter}}"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               TextColor="Gray"/>
+                    </Grid>
+                </Frame>
+
+                <!-- Tiedot -->
+                <Label Text="Palvelun tiedot" 
+                       FontAttributes="Bold" 
+                       FontSize="18"
+                       Margin="0,10,0,5"/>
+
+                <Label Text="Nimi:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuAlue.Nimi}" IsReadOnly="True"/>
+
+                <Label Text="Sijainti:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuAlue.Sijainti}" IsReadOnly="True"/>
+
+                <Label Text="Kuvaus:" FontAttributes="Bold"/>
+                <Editor Text="{Binding ValittuAlue.Kuvaus}" 
+                        HeightRequest="100"
+                        IsReadOnly="True"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
 </ContentPage>
