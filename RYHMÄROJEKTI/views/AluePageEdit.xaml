@@ -23,7 +23,8 @@
          
 
             <HorizontalStackLayout Spacing="10">
-     
+                <Button Text="Tallenna" Clicked="OnSaveClicked" BackgroundColor="#512BD4" TextColor="White"/>
+                <Button Text="Peruuta" Clicked="OnCancelClicked" />
             </HorizontalStackLayout>
 
         </VerticalStackLayout>
