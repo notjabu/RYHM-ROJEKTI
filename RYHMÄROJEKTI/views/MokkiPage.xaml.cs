@@ -12,7 +12,7 @@ public partial class MokkiPage : ContentPage
     {
         await Shell.Current.GoToAsync("///MokkiPageEdit");
     }
-
+ 
     async void Muokkaa_Clicked(object sender, EventArgs e)
     {
         // Try to read ValittuAlue from the BindingContext (safe reflection)
@@ -25,5 +25,15 @@ public partial class MokkiPage : ContentPage
 
         // Navigate to edit page (absolute route matching AppShell)
         await Shell.Current.GoToAsync("///MokkiPageEdit");
+    }
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+
+        // Haetaan ViewModel ja käsketään sitä lataamaan tiedot
+        if (BindingContext is ViewModels.MokkiViewModel vm)
+        {
+            await vm.LataaMokit();
+        }
     }
 }

@@ -17,7 +17,7 @@
                 />
 
             <Button Text="Lisää Mökki" 
-                Command="{Binding LisaaMokkiCommand}" 
+                Command="{Binding LisaaMokki_Clicked}" 
                 Margin="5" 
                 Grid.Row="1"
                 />
