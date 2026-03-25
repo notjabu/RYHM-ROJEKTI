@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RYHMÄROJEKTI.views.MokkiPage"
-             Title="MokkiPage">
+             Title="Mökit">
     <Grid ColumnDefinitions="Auto, *,2*"
           Padding="10"
           ColumnSpacing="15">
@@ -93,19 +93,19 @@
             </Frame>
 
             <Label Text="Nimi"/>
-            <Entry Text="{Binding ValittuMokki.Nimi}"/>
+            <Entry Text="{Binding ValittuMokki.Nimi}" IsReadOnly="True"/>
 
             <Label Text="Katuosoite"/>
-            <Entry Text="{Binding ValittuMokki.Katuosoite}"/>
+            <Entry Text="{Binding ValittuMokki.Katuosoite}" IsReadOnly="True"/>
 
-            <Label Text="Postinumero"/>
-            <Entry Text="{Binding ValittuMokki.Postinumero}"/>
+            <Label Text="Postinumero"/> 
+            <Entry Text="{Binding ValittuMokki.Postinumero}" IsReadOnly="True"/>
 
             <Label Text="Postitoimipaikka"/>
-            <Entry Text="{Binding ValittuMokki.Postitoimipaikka}"/>
+            <Entry Text="{Binding ValittuMokki.Postitoimipaikka}" IsReadOnly="True"/>
 
             <Label Text="Kuvaus"/>
-            <Entry Text="{Binding ValittuMokki.Kuvaus}"/>
+            <Entry Text="{Binding ValittuMokki.Kuvaus}" IsReadOnly="True"/>
 
         </StackLayout>
     </Grid>
