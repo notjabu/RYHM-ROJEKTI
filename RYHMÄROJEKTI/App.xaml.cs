@@ -1,15 +1,19 @@
-﻿namespace RYHMÄROJEKTI
-{
-    public partial class App : Application
-    {
-        public App()
-        {
-            InitializeComponent();
-        }
+﻿namespace RYHMÄROJEKTI;
 
-        protected override Window CreateWindow(IActivationState? activationState)
-        {
-            return new Window(new AppShell());
-        }
+using RYHMÄROJEKTI.Services;
+
+public partial class App : Application
+{
+    // Luodaan staattinen yhteys, jota voi kutsua mistä vain
+    public static DatabaseService Database { get; private set; }
+
+    public App()
+    {
+        InitializeComponent();
+
+        // Alustetaan tietokantapalvelu
+        Database = new DatabaseService();
+
+        MainPage = new AppShell();
     }
 }
