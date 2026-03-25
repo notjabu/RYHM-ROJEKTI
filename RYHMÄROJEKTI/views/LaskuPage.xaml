@@ -8,7 +8,7 @@
           Padding="10"
           ColumnSpacing="15">
 
-        <!-- Left: search & actions -->
+        <!-- Vaihtoehto muokata, lisätä jne -->
         <VerticalStackLayout Grid.Column="0"
                              Spacing="10"
                              WidthRequest="150">
@@ -35,7 +35,7 @@
                     TextColor="White"/>
         </VerticalStackLayout>
 
-        <!-- Center: customers list -->
+        <!-- asiakaslista -->
         <VerticalStackLayout Grid.Column="1" Spacing="10">
 
             <Label Text="Kaikki asiakkaat"
@@ -62,7 +62,7 @@
 
         </VerticalStackLayout>
 
-        <!-- Right: selected customer's details + invoices -->
+        <!-- asiakkaat tiedot ja laskut -->
         <ScrollView Grid.Column="2">
             <VerticalStackLayout Spacing="10"
                                  Padding="10"

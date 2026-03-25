@@ -44,7 +44,7 @@ public partial class LaskuPage : ContentPage
             return;
         }
 
-        // Placeholder: open add-invoice flow or show alert
+        
         await DisplayAlert("Lisää lasku", "Lisää lasku -toiminto ei ole vielä toteutettu.", "OK");
     }
 
@@ -57,7 +57,7 @@ public partial class LaskuPage : ContentPage
             return;
         }
 
-        // Placeholder: open edit-invoice flow
+        
         await DisplayAlert("Muokkaa laskua", "Muokkaa laskua -toiminto ei ole vielä toteutettu.", "OK");
     }
 
@@ -78,12 +78,12 @@ public partial class LaskuPage : ContentPage
             return;
         }
 
-        // Confirm
+        
         var numero = selectedInvoice.GetType().GetProperty("Numero")?.GetValue(selectedInvoice)?.ToString() ?? selectedInvoice.ToString();
         bool vahvista = await DisplayAlert("Vahvista", $"Poistetaanko lasku {numero}?", "Poista", "Peruuta");
         if (!vahvista) return;
 
-        // Try to remove from ValittuAsiakas.Laskut
+        
         var laskutProp = valittuAsiakas.GetType().GetProperty("Laskut");
         if (laskutProp == null)
         {
@@ -118,7 +118,7 @@ public partial class LaskuPage : ContentPage
             }
         }
 
-        // Optionally clear selected invoice binding if ViewModel exposes it
+        
         var vmProp = bc.GetType().GetProperty("ValittuLasku");
         vmProp?.SetValue(bc, null);
 
