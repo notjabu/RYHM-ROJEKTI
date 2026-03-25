@@ -61,11 +61,7 @@ public partial class MokkiPageEdit : ContentPage
             await DisplayAlert("Virhe", "Anna katu", "OK");
             return;
         }
-        if (string.IsNullOrEmpty(postitoimipaikka))
-        {
-            await DisplayAlert("Virhe", "Anna postitoimipaikka", "OK");
-            return;
-        }
+
         try
         {
             await using var conn = new MySqlConnection(ConnectionString);

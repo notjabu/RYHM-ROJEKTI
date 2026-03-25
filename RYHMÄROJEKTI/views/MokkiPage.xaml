@@ -65,9 +65,6 @@
                                    FontAttributes="Bold" 
                                    />
 
-                            <Label Grid.Column="1" 
-                                   Text="{Binding Postitoimipaikka}" 
-                                   />
                         </Grid>
                     </ViewCell>
                 </DataTemplate>

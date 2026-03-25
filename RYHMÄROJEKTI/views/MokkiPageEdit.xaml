@@ -17,8 +17,6 @@
 
             <Entry x:Name="PostinumeroEntry" Text="{Binding Postinumero}" Placeholder="Postinumero" />
 
-            <Entry x:Name="PostitoimipaikkaEntry" Text="{Binding Postitoimipaikka}" Placeholder="Postitoimipaikka" />
-
             <Label Text="Kuvaus" FontAttributes="Bold" />
             <Entry x:Name="KuvausEntry" Text="{Binding Kuvaus}" Placeholder="Lyhyt kuvaus" />
 
