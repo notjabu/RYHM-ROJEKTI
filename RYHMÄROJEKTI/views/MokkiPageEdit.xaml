@@ -24,8 +24,8 @@
 
             <HorizontalStackLayout Spacing="10">
                 <!-- Clicked-nimet vastaamaan code-behindia -->
-                <Button Text="Tallenna" Clicked="OnTallennaClicked"/>
-                <Button Text="Peruuta" Clicked="OnPeruutaClicked"/>
+                <Button Text="Tallenna" Clicked="OnSaveClicked"/>
+                <Button Text="Peruuta" Clicked="OnCancelClicked"/>
             </HorizontalStackLayout>
 
         </VerticalStackLayout>

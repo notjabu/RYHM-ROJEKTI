@@ -4,8 +4,8 @@
              x:Class="RYHMÄROJEKTI.views.MokkiPage"
              Title="MokkiPage">
     <Grid ColumnDefinitions="Auto, *,2*"
-          Padding="2"
-          ColumnSpacing="10">
+          Padding="10"
+          ColumnSpacing="15">
         <!-- Napit -->
         <VerticalStackLayout Grid.Column="0"
                              Spacing="10"
@@ -50,6 +50,15 @@
                     <ViewCell>
                         <Grid ColumnDefinitions="*,*">
 
+                            <!-- Pieni thumbnail -->
+                            <Frame Grid.Column="0" 
+                                   WidthRequest="40" 
+                                   HeightRequest="40" 
+                                   CornerRadius="20"
+                                   IsClippedToBounds="True">
+                                <Image Source="{Binding Kuva}" 
+                                       Aspect="AspectFill"/>
+                            </Frame>
                             <!-- Korjattu binding: käytä Mokki-luokan propertyja -->
                             <Label Grid.Column="0" 
                                    Text="{Binding Nimi}" 

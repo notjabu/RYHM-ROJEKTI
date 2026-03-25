@@ -13,7 +13,7 @@
         </Tab>
 
         <Tab Title="Mökkien hallinta" FlyoutDisplayOptions="AsMultipleItems">
-            <ShellContent ContentTemplate="{DataTemplate views:MokkiPage}" Route="MokkiPage"/>
+            <ShellContent Title="Mökit" ContentTemplate="{DataTemplate views:MokkiPage}" Route="MokkiPage"/>
             <ShellContent Title="Mökkien hallinta" ContentTemplate="{DataTemplate views:MokkiPageEdit}" Route="MokkiPageEdit"/>
         </Tab>
         

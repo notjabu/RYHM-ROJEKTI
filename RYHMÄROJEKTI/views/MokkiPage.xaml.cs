@@ -1,4 +1,4 @@
-using RYHMÄROJEKTI.ViewModels;
+using RYHMÄROJEKTI.views;
 namespace RYHMÄROJEKTI.views;
 
 public partial class MokkiPage : ContentPage
@@ -6,6 +6,24 @@ public partial class MokkiPage : ContentPage
 	public MokkiPage()
 	{
 		InitializeComponent();
-        BindingContext = new MokkiViewModel();
+    }
+
+    async void LisaaMokki_Clicked(object sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync("///MokkiPageEdit");
+    }
+
+    async void Muokkaa_Clicked(object sender, EventArgs e)
+    {
+        // Try to read ValittuAlue from the BindingContext (safe reflection)
+        var valittu = BindingContext?.GetType().GetProperty("ValittuMokki")?.GetValue(BindingContext);
+        if (valittu == null)
+        {
+            await DisplayAlert("Huom", "Valitse muokattava mökki ensin.", "OK");
+            return;
+        }
+
+        // Navigate to edit page (absolute route matching AppShell)
+        await Shell.Current.GoToAsync("///MokkiPageEdit");
     }
 }
