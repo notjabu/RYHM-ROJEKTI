@@ -4,7 +4,7 @@
              Title="Mökin lisäys / muokkaus">
 
     <ScrollView>
-        <VerticalStackLayout Padding="12" Spacing="10">
+        <VerticalStackLayout Padding="15" Spacing="12">
             <Image HeightRequest="200" Aspect="AspectFill" Source="{Binding Kuva}" />
             <Button Text="Valitse kuva" Clicked="OnPickImageClicked" />
 

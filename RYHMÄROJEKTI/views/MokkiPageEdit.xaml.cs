@@ -71,12 +71,11 @@ public partial class MokkiPageEdit : ContentPage
             await using var conn = new MySqlConnection(ConnectionString);
             await conn.OpenAsync();
 
-            const string sql = "INSERT INTO Alue (Nimi, Sijainti, Kuvaus) VALUES (@nimi, @sijainti, @kuvaus)";
+            const string sql = "INSERT INTO Alue (MokkiNimi, Katuosoite, Kuvaus, Postinumero) VALUES (@mokkinimi, @katuosoite, @kuvaus, @postinumero)";
             await using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@nimi", nimi);
-            cmd.Parameters.AddWithValue("@katu", katu);
+            cmd.Parameters.AddWithValue("@mokkinimi", nimi);
+            cmd.Parameters.AddWithValue("@katuosoite", katu);
             cmd.Parameters.AddWithValue("@postinumero", postinumero);
-            cmd.Parameters.AddWithValue("@postitoimipaikka", postitoimipaikka);
             cmd.Parameters.AddWithValue("@kuvaus", kuvaus);
 
             var affected = await cmd.ExecuteNonQueryAsync();
