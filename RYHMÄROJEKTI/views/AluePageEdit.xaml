@@ -12,24 +12,18 @@
             <Entry x:Name="NimiEntry" Placeholder="Alueen nimi"/>
 
             <Label Text="Sijainti" />
-            
-            <Grid>
-                <Entry x:Name="SijaintiEntry"
-                       IsReadOnly="True"
-                       Placeholder="Valitse sijainti"
-                       Text="{Binding Source={x:Reference SijaintiPicker}, Path=SelectedItem, StringFormat='{}{0}'}" />
+            <Entry x:Name="SijaintiEntry"
+                   Placeholder="Syötä sijainti"
+                   Text="{Binding ValittuAlue.Sijainti}" />
 
-
-                <Picker x:Name="SijaintiPicker"
-                        BackgroundColor="Transparent"
-                        Opacity="0.01" />
-            </Grid>
+            <Label Text="Postinumero" />
+            <Entry x:Name="PostinumeroEntry"
+                   Placeholder="Syötä postinumero"
+                   Keyboard="Numeric"
+                   Text="{Binding ValittuAlue.Postinumero}" />
 
             <Label Text="Kuvaus" />
             <Editor x:Name="KuvausEditor" HeightRequest="120" Placeholder="Kirjoita kuvaus..."/>
-
-            <Label Text="Kuva" />
-            <Image x:Name="KuvaImage" HeightRequest="180" Aspect="AspectFill" BackgroundColor="#eee"/>
 
             <HorizontalStackLayout Spacing="10">
                 <Button Text="Tallenna" Clicked="OnSaveClicked" BackgroundColor="#512BD4" TextColor="White"/>

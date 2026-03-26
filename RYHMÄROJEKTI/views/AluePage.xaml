@@ -82,21 +82,6 @@
                                  Padding="10"
                                  IsVisible="{Binding ValittuAlue, Converter={StaticResource NullToBoolConverter}}">
 
-                <!-- Kuva-alue -->
-                <Frame HeightRequest="200"
-                       CornerRadius="10"
-                       IsClippedToBounds="True">
-                    <Grid>
-                        <Image Source="{Binding ValittuAlue.Kuva}" 
-                               Aspect="AspectFill"/>
-                        <Label Text="Ei kuvaa" 
-                               IsVisible="{Binding ValittuAlue.Kuva, Converter={StaticResource NullToBoolConverter}}"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center"
-                               TextColor="Gray"/>
-                    </Grid>
-                </Frame>
-
                 <!-- Tiedot -->
                 <Label Text="Alueen tiedot" 
                        FontAttributes="Bold" 
@@ -109,11 +94,13 @@
                 <Label Text="Sijainti:" FontAttributes="Bold"/>
                 <Entry Text="{Binding ValittuAlue.Sijainti}" IsReadOnly="True"/>
 
+                <Label Text="Postinumero:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuAlue.Postinumero}" IsReadOnly="True"/>
+
                 <Label Text="Kuvaus:" FontAttributes="Bold"/>
                 <Editor Text="{Binding ValittuAlue.Kuvaus}" 
                         HeightRequest="100"
                         IsReadOnly="True"/>
-
             </VerticalStackLayout>
         </ScrollView>
 
