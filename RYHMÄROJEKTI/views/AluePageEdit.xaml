@@ -11,10 +11,10 @@
             <Label Text="Nimi" />
             <Entry x:Name="NimiEntry" Placeholder="Alueen nimi"/>
 
-            <Label Text="Sijainti" />
-            <Entry x:Name="SijaintiEntry"
-                   Placeholder="Syötä sijainti"
-                   Text="{Binding ValittuAlue.Sijainti}" />
+            <Label Text="Postitoimipaikka" />
+            <Entry x:Name="PostitoimipaikkaEntry"
+                   Placeholder="Syötä postitoimipaikka"
+                   Text="{Binding ValittuAlue.Postitoimipaikka}" />
 
             <Label Text="Postinumero" />
             <Entry x:Name="PostinumeroEntry"
