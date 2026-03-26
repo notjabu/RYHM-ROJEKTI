@@ -48,7 +48,6 @@ public partial class MokkiPageEdit : ContentPage
         var nimi = NimiEntry.Text?.Trim() ?? string.Empty;
         var katu = KatuEntry.Text?.Trim() ?? string.Empty;
         var postinumero = PostinumeroEntry.Text?.Trim() ?? string.Empty;
-        var postitoimipaikka = PostitoimipaikkaEntry.Text?.Trim() ?? string.Empty;
         var kuvaus = KuvausEntry.Text?.Trim() ?? string.Empty;
 
         if (string.IsNullOrEmpty(nimi))

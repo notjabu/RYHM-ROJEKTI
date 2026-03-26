@@ -65,7 +65,6 @@ namespace RYHMÄROJEKTI.ViewModels
                     bool vastaus = await Application.Current.MainPage.DisplayAlert("Vahvistus", "Haluatko varmasti poistaa mökin?", "Kyllä", "Ei");
                     if (vastaus)
                     {
-                        await App.Database.DeleteMokkiAsync(ValittuMokki);
                         Mokit.Remove(ValittuMokki);
                         ValittuMokki = null;
                     }
