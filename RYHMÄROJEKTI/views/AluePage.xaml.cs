@@ -13,7 +13,7 @@ public partial class AluePage : ContentPage
 {
     // LOCAL CONNECTION STRING - change credentials before running.
     // For Android emulator connecting to host use Server=10.0.2.2
-    private const string ConnectionString = "Server=127.0.0.1;Port=3306;Database=vn;User=root;Password=YES123;SslMode=None;";
+    private const string ConnectionString = "Server=127.0.0.1;Port=3307;Database=vn;User=root;Password=;SslMode=None;";
 
     public AluePage()
     {

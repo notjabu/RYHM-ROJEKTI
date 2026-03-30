@@ -7,7 +7,7 @@ namespace RYHMÄROJEKTI.views;
 [QueryProperty(nameof(AsiakasId), "asiakasId")]
 public partial class AsiakasPageEdit : ContentPage
 {
-    private const string ConnectionString = "Server=127.0.0.1;Port=3306;Database=vn;User=root;Password=YES123;SslMode=None;";
+    private const string ConnectionString = "Server=127.0.0.1;Port=3307;Database=vn;User=root;Password=;SslMode=None;";
 
     private int? _asiakasId;
     private string _origEtunimi = string.Empty;

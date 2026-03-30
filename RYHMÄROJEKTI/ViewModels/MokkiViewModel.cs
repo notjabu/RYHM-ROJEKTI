@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using RYHMÄROJEKTI.Models;
+using RYHMÄROJEKTI.Modeelit;
 
 namespace RYHMÄROJEKTI.ViewModels
 {

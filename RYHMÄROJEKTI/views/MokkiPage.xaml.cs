@@ -11,9 +11,9 @@ namespace RYHMÄROJEKTI.views;
 
 public partial class MokkiPage : ContentPage
 {
-	private const string ConnectionString = "Server=127.0.0.1;Port=3306;Database=vn;User=root;Password=YES123;SslMode=None;";
+    private const string ConnectionString = "Server=127.0.0.1;Port=3307;Database=vn;User=root;Password=;SslMode=None;";
 
-	public MokkiPage()
+    public MokkiPage()
 	{
 		InitializeComponent();
 		BindingContext = new MokkiPageViewModel(ConnectionString);

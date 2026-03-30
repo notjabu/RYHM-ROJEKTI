@@ -11,9 +11,9 @@ namespace RYHMÄROJEKTI.views;
 
 public partial class AsiakasPage : ContentPage
 {
-	private const string ConnectionString = "Server=127.0.0.1;Port=3306;Database=vn;User=root;Password=YES123;SslMode=None;";
+    private const string ConnectionString = "Server=127.0.0.1;Port=3307;Database=vn;User=root;Password=;SslMode=None;";
 
-	public AsiakasPage()
+    public AsiakasPage()
 	{
 		InitializeComponent();
 		BindingContext = new AsiakasPageViewModel(ConnectionString);
