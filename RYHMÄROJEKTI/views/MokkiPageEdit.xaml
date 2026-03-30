@@ -1,33 +1,52 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RYHMÄROJEKTI.views.MokkiPageEdit"
-             Title="Mökin lisäys / muokkaus">
+             Title="Lisää mökki">
 
     <ScrollView>
         <VerticalStackLayout Padding="15" Spacing="12">
-            <Image HeightRequest="200" Aspect="AspectFill" Source="{Binding Kuva}" />
-            <Button Text="Valitse kuva" Clicked="OnPickImageClicked" />
 
-            <Label Text="Nimi" FontAttributes="Bold" />
-            <!-- Bindataan suoraan Mokki-olion propertyihin -->
-            <Entry x:Name="NimiEntry" Text="{Binding Nimi}" Placeholder="Mökin nimi" />
+            <Label Text="{Binding Title, Source={RelativeSource AncestorType={x:Type ContentPage}}}"
+                   FontAttributes="Bold" FontSize="18"/>
 
-            <Label Text="Osoite" FontAttributes="Bold" />
-            <Entry x:Name="KatuEntry" Text="{Binding Katuosoite}" Placeholder="Katuosoite" />
+            <Label Text="Nimi" FontAttributes="Bold"/>
+            <Entry x:Name="NimiEntry" Placeholder="Mökin nimi"/>
 
-            <Entry x:Name="PostinumeroEntry" Text="{Binding Postinumero}" Placeholder="Postinumero" />
+            <Label Text="Katuosoite" FontAttributes="Bold"/>
+            <Entry x:Name="KatuosoiteEntry" Placeholder="Katuosoite"/>
 
-            <Label Text="Kuvaus" FontAttributes="Bold" />
-            <Entry x:Name="KuvausEntry" Text="{Binding Kuvaus}" Placeholder="Lyhyt kuvaus" />
+            <Label Text="Postinumero" FontAttributes="Bold"/>
+            <HorizontalStackLayout Spacing="8">
+                <Picker x:Name="PostiPicker"
+                        Title="Valitse postinumero"
+                        HorizontalOptions="FillAndExpand"
+                        SelectedIndexChanged="OnPostiPickerChanged" />
+                <Button Text="+ Lisää uusi"
+                        Clicked="OnLisaaPostiClicked"
+                        BackgroundColor="#27AE60"
+                        TextColor="White"
+                        FontSize="12"
+                        VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <Label Text="Hinta (€/yö)" FontAttributes="Bold"/>
+            <Entry x:Name="HintaEntry" Placeholder="Hinta" Keyboard="Numeric"/>
+
+            <Label Text="Henkilömäärä" FontAttributes="Bold"/>
+            <Entry x:Name="HenkilomaaraEntry" Placeholder="Henkilömäärä" Keyboard="Numeric"/>
+
+            <Label Text="Varustelu" FontAttributes="Bold"/>
+            <Editor x:Name="VarusteluEditor" HeightRequest="80" Placeholder="Varustelu..."/>
+
+            <Label Text="Kuvaus" FontAttributes="Bold"/>
+            <Editor x:Name="KuvausEditor" HeightRequest="120" Placeholder="Kuvaus..."/>
 
             <HorizontalStackLayout Spacing="10">
-                <!-- Clicked-nimet vastaamaan code-behindia -->
-                <Button Text="Tallenna" Clicked="OnSaveClicked"/>
-                <Button Text="Peruuta" Clicked="OnCancelClicked"/>
+                <Button Text="Tallenna" Clicked="OnSaveClicked" BackgroundColor="#512BD4" TextColor="White"/>
+                <Button Text="Peruuta" Clicked="OnCancelClicked" />
             </HorizontalStackLayout>
 
         </VerticalStackLayout>
-
     </ScrollView>
 
 </ContentPage>

@@ -14,12 +14,10 @@
 
         <Tab Title="Mökkien hallinta" FlyoutDisplayOptions="AsMultipleItems">
             <ShellContent Title="Mökit" ContentTemplate="{DataTemplate views:MokkiPage}" Route="MokkiPage"/>
-            <ShellContent Title="Mökkien hallinta" ContentTemplate="{DataTemplate views:MokkiPageEdit}" Route="MokkiPageEdit"/>
         </Tab>
         
         <Tab Title="Alueiden hallinta" FlyoutDisplayOptions="AsMultipleItems">
             <ShellContent Title="Alueet" ContentTemplate="{DataTemplate views:AluePage}" Route="AluePage"/>
-            <ShellContent Title="Alueitten hallinta" ContentTemplate="{DataTemplate views:AluePageEdit}" Route="AluePageEdit"/>
         </Tab>
         
         <Tab Title="Palveluiden hallinta">

@@ -1,32 +1,34 @@
-using Microsoft.Maui.Storage;
 using MySqlConnector;
 using System;
 using System.Collections.Generic;
 
 namespace RYHMÄROJEKTI.views;
 
-[QueryProperty(nameof(AlueId), "alueId")]
-public partial class AluePageEdit : ContentPage
+[QueryProperty(nameof(AsiakasId), "asiakasId")]
+public partial class AsiakasPageEdit : ContentPage
 {
     private const string ConnectionString = "Server=127.0.0.1;Port=3306;Database=vn;User=root;Password=YES123;SslMode=None;";
 
-    private int? _alueId;
-    private string _origNimi = string.Empty;
-    private string _origPostinumero = string.Empty;
-    private string _origKuvaus = string.Empty;
+    private int? _asiakasId;
+    private string _origEtunimi = string.Empty;
+    private string _origSukunimi = string.Empty;
+    private string _origLahiosoite = string.Empty;
+    private string _origPostinro = string.Empty;
+    private string _origEmail = string.Empty;
+    private string _origPuhelinnro = string.Empty;
 
     private readonly List<PostiItem> _postiItems = new();
 
-    public string AlueId
+    public string AsiakasId
     {
         set
         {
             if (int.TryParse(value, out var id))
-                _alueId = id;
+                _asiakasId = id;
         }
     }
 
-    public AluePageEdit()
+    public AsiakasPageEdit()
     {
         InitializeComponent();
     }
@@ -37,20 +39,24 @@ public partial class AluePageEdit : ContentPage
 
         await LoadPostiListAsync();
 
-        if (_alueId.HasValue)
+        if (_asiakasId.HasValue)
         {
-            Title = "Muokkaa aluetta";
-            await LoadAlueAsync(_alueId.Value);
+            Title = "Muokkaa asiakasta";
+            await LoadAsiakasAsync(_asiakasId.Value);
         }
         else
         {
-            Title = "Lisää alue";
-            NimiEntry.Text = string.Empty;
+            Title = "Lisää asiakas";
+            EtunimiEntry.Text = string.Empty;
+            SukunimiEntry.Text = string.Empty;
+            LahiosoiteEntry.Text = string.Empty;
             PostiPicker.SelectedIndex = -1;
-            KuvausEditor.Text = string.Empty;
+            EmailEntry.Text = string.Empty;
+            PuhelinnroEntry.Text = string.Empty;
         }
     }
 
+    // ── Posti picker ────────────────────────────────────────────────────
     private async Task LoadPostiListAsync()
     {
         try
@@ -80,9 +86,7 @@ public partial class AluePageEdit : ContentPage
         }
     }
 
-    private void OnPostiPickerChanged(object sender, EventArgs e)
-    {
-    }
+    private void OnPostiPickerChanged(object sender, EventArgs e) { }
 
     private async void OnLisaaPostiClicked(object sender, EventArgs e)
     {
@@ -138,7 +142,8 @@ public partial class AluePageEdit : ContentPage
         return null;
     }
 
-    private async Task LoadAlueAsync(int id)
+    // ── Load existing asiakas ───────────────────────────────────────────
+    private async Task LoadAsiakasAsync(int id)
     {
         try
         {
@@ -146,10 +151,10 @@ public partial class AluePageEdit : ContentPage
             await conn.OpenAsync();
 
             const string sql = @"
-                SELECT a.nimi, a.sijainti, a.kuvaus, p.postinro
-                FROM alue a
-                LEFT JOIN posti p ON p.toimipaikka = a.sijainti
-                WHERE a.alue_id = @id";
+                SELECT etunimi, sukunimi, lahiosoite, postinro,
+                       email, puhelinnro
+                FROM asiakas
+                WHERE asiakas_id = @id";
 
             await using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@id", id);
@@ -157,21 +162,30 @@ public partial class AluePageEdit : ContentPage
 
             if (await rdr.ReadAsync())
             {
-                var nimi = rdr.IsDBNull(rdr.GetOrdinal("nimi")) ? string.Empty : rdr.GetString("nimi");
+                var etunimi = rdr.IsDBNull(rdr.GetOrdinal("etunimi")) ? string.Empty : rdr.GetString("etunimi");
+                var sukunimi = rdr.IsDBNull(rdr.GetOrdinal("sukunimi")) ? string.Empty : rdr.GetString("sukunimi");
+                var lahiosoite = rdr.IsDBNull(rdr.GetOrdinal("lahiosoite")) ? string.Empty : rdr.GetString("lahiosoite");
                 var postinro = rdr.IsDBNull(rdr.GetOrdinal("postinro")) ? string.Empty : rdr.GetString("postinro");
-                var kuvaus = rdr.IsDBNull(rdr.GetOrdinal("kuvaus")) ? string.Empty : rdr.GetString("kuvaus");
+                var email = rdr.IsDBNull(rdr.GetOrdinal("email")) ? string.Empty : rdr.GetString("email");
+                var puhelinnro = rdr.IsDBNull(rdr.GetOrdinal("puhelinnro")) ? string.Empty : rdr.GetString("puhelinnro");
 
-                NimiEntry.Text = nimi;
-                KuvausEditor.Text = kuvaus;
+                EtunimiEntry.Text = etunimi;
+                SukunimiEntry.Text = sukunimi;
+                LahiosoiteEntry.Text = lahiosoite;
                 SelectPostiByPostinro(postinro);
+                EmailEntry.Text = email;
+                PuhelinnroEntry.Text = puhelinnro;
 
-                _origNimi = nimi;
-                _origPostinumero = postinro;
-                _origKuvaus = kuvaus;
+                _origEtunimi = etunimi;
+                _origSukunimi = sukunimi;
+                _origLahiosoite = lahiosoite;
+                _origPostinro = postinro;
+                _origEmail = email;
+                _origPuhelinnro = puhelinnro;
             }
             else
             {
-                await DisplayAlert("Virhe", "Aluetta ei löytynyt.", "OK");
+                await DisplayAlert("Virhe", "Asiakasta ei löytynyt.", "OK");
                 await Shell.Current.GoToAsync("..");
             }
         }
@@ -182,49 +196,38 @@ public partial class AluePageEdit : ContentPage
         }
     }
 
+    // ── Cancel ──────────────────────────────────────────────────────────
     private async void OnCancelClicked(object sender, EventArgs e)
     {
-        _alueId = null;
+        _asiakasId = null;
         await Shell.Current.GoToAsync("..");
     }
 
-    private async void OnSelectImageClicked(object sender, EventArgs e)
-    {
-        try
-        {
-            var result = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Valitse kuva", FileTypes = FilePickerFileType.Images });
-            if (result != null)
-            {
-                using var stream = await result.OpenReadAsync();
-            }
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlert("Virhe", ex.Message, "OK");
-        }
-    }
-
+    // ── Save ────────────────────────────────────────────────────────────
     private async void OnSaveClicked(object sender, EventArgs e)
     {
-        var nimi = NimiEntry.Text?.Trim() ?? string.Empty;
-        var kuvaus = KuvausEditor.Text?.Trim() ?? string.Empty;
+        var etunimi = EtunimiEntry.Text?.Trim() ?? string.Empty;
+        var sukunimi = SukunimiEntry.Text?.Trim() ?? string.Empty;
+        var lahiosoite = LahiosoiteEntry.Text?.Trim() ?? string.Empty;
+        var email = EmailEntry.Text?.Trim() ?? string.Empty;
+        var puhelinnro = PuhelinnroEntry.Text?.Trim() ?? string.Empty;
 
         var selectedPosti = GetSelectedPosti();
-        var postinumero = selectedPosti?.Postinro ?? string.Empty;
-        var postitoimipaikka = selectedPosti?.Toimipaikka ?? string.Empty;
+        var postinro = selectedPosti?.Postinro ?? string.Empty;
 
-        if (string.IsNullOrEmpty(nimi))
+        if (string.IsNullOrEmpty(etunimi) && string.IsNullOrEmpty(sukunimi))
         {
-            await DisplayAlert("Virhe", "Anna nimi.", "OK");
+            await DisplayAlert("Virhe", "Anna vähintään etunimi tai sukunimi.", "OK");
             return;
         }
 
-        // Editing existing record
-        if (_alueId.HasValue)
+        // ── Editing ─────────────────────────────────────────────────────
+        if (_asiakasId.HasValue)
         {
-            if (nimi == _origNimi && postinumero == _origPostinumero && kuvaus == _origKuvaus)
+            if (etunimi == _origEtunimi && sukunimi == _origSukunimi && lahiosoite == _origLahiosoite
+                && postinro == _origPostinro && email == _origEmail && puhelinnro == _origPuhelinnro)
             {
-                _alueId = null;
+                _asiakasId = null;
                 await Shell.Current.GoToAsync("..");
                 return;
             }
@@ -236,18 +239,26 @@ public partial class AluePageEdit : ContentPage
                 var transaction = await conn.BeginTransactionAsync();
                 try
                 {
-                    const string updateSql = "UPDATE alue SET nimi = @nimi, sijainti = @sijainti, kuvaus = @kuvaus WHERE alue_id = @id";
-                    await using var updateCmd = new MySqlCommand(updateSql, conn);
-                    updateCmd.Transaction = transaction;
-                    updateCmd.Parameters.AddWithValue("@nimi", nimi);
-                    updateCmd.Parameters.AddWithValue("@sijainti", postitoimipaikka);
-                    updateCmd.Parameters.AddWithValue("@kuvaus", kuvaus);
-                    updateCmd.Parameters.AddWithValue("@id", _alueId.Value);
-                    await updateCmd.ExecuteNonQueryAsync();
+                    const string updateSql = @"
+                        UPDATE asiakas
+                        SET etunimi = @etunimi, sukunimi = @sukunimi,
+                            lahiosoite = @lahiosoite, postinro = @postinro,
+                            email = @email, puhelinnro = @puhelinnro
+                        WHERE asiakas_id = @id";
+                    await using var cmd = new MySqlCommand(updateSql, conn);
+                    cmd.Transaction = transaction;
+                    cmd.Parameters.AddWithValue("@etunimi", etunimi);
+                    cmd.Parameters.AddWithValue("@sukunimi", sukunimi);
+                    cmd.Parameters.AddWithValue("@lahiosoite", lahiosoite);
+                    cmd.Parameters.AddWithValue("@postinro", postinro);
+                    cmd.Parameters.AddWithValue("@email", email);
+                    cmd.Parameters.AddWithValue("@puhelinnro", puhelinnro);
+                    cmd.Parameters.AddWithValue("@id", _asiakasId.Value);
+                    await cmd.ExecuteNonQueryAsync();
 
                     await transaction.CommitAsync();
                     await DisplayAlert("Valmis", "Muutokset tallennettu.", "OK");
-                    _alueId = null;
+                    _asiakasId = null;
                     await Shell.Current.GoToAsync("..");
                 }
                 catch
@@ -263,7 +274,7 @@ public partial class AluePageEdit : ContentPage
             return;
         }
 
-        // Creating new record
+        // ── Creating new ────────────────────────────────────────────────
         try
         {
             await using var conn = new MySqlConnection(ConnectionString);
@@ -271,16 +282,23 @@ public partial class AluePageEdit : ContentPage
             var transaction = await conn.BeginTransactionAsync();
             try
             {
-                const string alueSql = "INSERT INTO alue (nimi, sijainti, kuvaus) VALUES (@nimi, @sijainti, @kuvaus)";
-                await using var alueCmd = new MySqlCommand(alueSql, conn);
-                alueCmd.Transaction = transaction;
-                alueCmd.Parameters.AddWithValue("@nimi", nimi);
-                alueCmd.Parameters.AddWithValue("@sijainti", postitoimipaikka);
-                alueCmd.Parameters.AddWithValue("@kuvaus", kuvaus);
-                await alueCmd.ExecuteNonQueryAsync();
+                const string insertSql = @"
+                    INSERT INTO asiakas (etunimi, sukunimi, lahiosoite, postinro,
+                                        email, puhelinnro)
+                    VALUES (@etunimi, @sukunimi, @lahiosoite, @postinro,
+                            @email, @puhelinnro)";
+                await using var cmd = new MySqlCommand(insertSql, conn);
+                cmd.Transaction = transaction;
+                cmd.Parameters.AddWithValue("@etunimi", etunimi);
+                cmd.Parameters.AddWithValue("@sukunimi", sukunimi);
+                cmd.Parameters.AddWithValue("@lahiosoite", lahiosoite);
+                cmd.Parameters.AddWithValue("@postinro", postinro);
+                cmd.Parameters.AddWithValue("@email", email);
+                cmd.Parameters.AddWithValue("@puhelinnro", puhelinnro);
+                await cmd.ExecuteNonQueryAsync();
 
                 await transaction.CommitAsync();
-                await DisplayAlert("Valmis", "Alue tallennettu.", "OK");
+                await DisplayAlert("Valmis", "Asiakas tallennettu.", "OK");
                 await Shell.Current.GoToAsync("..");
             }
             catch

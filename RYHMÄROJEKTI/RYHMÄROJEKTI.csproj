@@ -76,7 +76,13 @@
 	  <MauiXaml Update="views\AsiakasPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="views\AsiakasPageEdit.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="views\LaskuPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="views\LaskuPageEdit.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="views\MokkiPage.xaml">
@@ -91,6 +97,11 @@
 	  <MauiXaml Update="views\PalveluPageEdit.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="obj\Debug\" />
+	  <Folder Include="Resources\izetizer\r\drawable\" />
 	</ItemGroup>
 
 </Project>

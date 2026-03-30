@@ -1,127 +1,188 @@
 using System;
-using System.Collections;
-using System.Reflection;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using Microsoft.Maui.Controls;
+using MySqlConnector;
+using System.Threading.Tasks;
 
 namespace RYHMÄROJEKTI.views;
 
 public partial class LaskuPage : ContentPage
 {
+    private const string ConnectionString = "Server=127.0.0.1;Port=3306;Database=vn;User=root;Password=YES123;SslMode=None;";
+
     public LaskuPage()
     {
         InitializeComponent();
+        BindingContext = new LaskuPageViewModel(ConnectionString);
     }
 
-    async void NaytaLaskut_Clicked(object sender, EventArgs e)
+    protected override async void OnAppearing()
     {
-        var bc = BindingContext;
-        var valittu = bc?.GetType().GetProperty("ValittuAsiakas")?.GetValue(bc);
-        if (valittu == null)
+        base.OnAppearing();
+        if (BindingContext is LaskuPageViewModel vm)
         {
-            await DisplayAlert("Huom", "Valitse asiakas nähdäksesi laskut.", "OK");
-            return;
+            await vm.LataaLaskutAsync();
         }
-
-        var laskutProp = valittu.GetType().GetProperty("Laskut");
-        if (laskutProp == null)
-        {
-            await DisplayAlert("Info", "Valitulla asiakkaalla ei ole laskut-kokoelmaa.", "OK");
-            return;
-        }
-
-        var laskut = laskutProp.GetValue(valittu) as ICollection;
-        int count = laskut?.Count ?? 0;
-        await DisplayAlert("Laskut", $"Valitulla asiakkaalla on {count} laskua.", "OK");
     }
 
     async void LisaaLasku_Clicked(object sender, EventArgs e)
     {
-        var bc = BindingContext;
-        var valittu = bc?.GetType().GetProperty("ValittuAsiakas")?.GetValue(bc);
-        if (valittu == null)
-        {
-            await DisplayAlert("Huom", "Valitse asiakas ennen laskun lisäämistä.", "OK");
-            return;
-        }
-
-        
-        await DisplayAlert("Lisää lasku", "Lisää lasku -toiminto ei ole vielä toteutettu.", "OK");
+        await Shell.Current.GoToAsync("LaskuPageEdit");
     }
 
-    async void MuokkaaLasku_Clicked(object sender, EventArgs e)
+    async void Muokkaa_Clicked(object sender, EventArgs e)
     {
-        var selectedInvoice = InvoiceListView.SelectedItem;
-        if (selectedInvoice == null)
+        if (BindingContext is not LaskuPageViewModel vm || vm.ValittuLasku == null)
         {
-            await DisplayAlert("Huom", "Valitse muokattava lasku oikeasta listasta.", "OK");
+            await DisplayAlert("Huom", "Valitse muokattava lasku ensin.", "OK");
             return;
         }
 
-        
-        await DisplayAlert("Muokkaa laskua", "Muokkaa laskua -toiminto ei ole vielä toteutettu.", "OK");
-    }
-
-    async void PoistaLasku_Clicked(object sender, EventArgs e)
-    {
-        var bc = BindingContext;
-        var valittuAsiakas = bc?.GetType().GetProperty("ValittuAsiakas")?.GetValue(bc);
-        if (valittuAsiakas == null)
+        var lasku = vm.ValittuLasku;
+        if (lasku.Id.HasValue)
         {
-            await DisplayAlert("Huom", "Valitse asiakas ennen poistamista.", "OK");
-            return;
-        }
-
-        var selectedInvoice = InvoiceListView.SelectedItem;
-        if (selectedInvoice == null)
-        {
-            await DisplayAlert("Huom", "Valitse poistettava lasku oikeasta listasta.", "OK");
-            return;
-        }
-
-        
-        var numero = selectedInvoice.GetType().GetProperty("Numero")?.GetValue(selectedInvoice)?.ToString() ?? selectedInvoice.ToString();
-        bool vahvista = await DisplayAlert("Vahvista", $"Poistetaanko lasku {numero}?", "Poista", "Peruuta");
-        if (!vahvista) return;
-
-        
-        var laskutProp = valittuAsiakas.GetType().GetProperty("Laskut");
-        if (laskutProp == null)
-        {
-            await DisplayAlert("Error", "Asiakkaalta puuttuu 'Laskut' -kokoelma.", "OK");
-            return;
-        }
-
-        var laskutCollection = laskutProp.GetValue(valittuAsiakas);
-        if (laskutCollection == null)
-        {
-            await DisplayAlert("Error", "'Laskut' on null.", "OK");
-            return;
-        }
-
-        if (laskutCollection is IList list)
-        {
-            list.Remove(selectedInvoice);
+            await Shell.Current.GoToAsync($"LaskuPageEdit?laskuId={lasku.Id.Value}");
         }
         else
         {
-            var removeMethod = laskutCollection.GetType().GetMethod("Remove", new Type[] { selectedInvoice.GetType() })
-                               ?? laskutCollection.GetType().GetMethod("Remove", new Type[] { typeof(object) })
-                               ?? laskutCollection.GetType().GetMethod("Remove");
-            if (removeMethod != null)
+            await Shell.Current.GoToAsync("LaskuPageEdit");
+        }
+    }
+
+    // ── ViewModel ───────────────────────────────────────────────────────
+    class LaskuPageViewModel : INotifyPropertyChanged
+    {
+        private readonly string _connString;
+
+        public ObservableCollection<LaskuItem> Laskut { get; } = new();
+
+        private LaskuItem _valittuLasku;
+        public LaskuItem ValittuLasku
+        {
+            get => _valittuLasku;
+            set { _valittuLasku = value; OnPropertyChanged(); }
+        }
+
+        public ICommand PoistaLaskuCommand { get; }
+
+        public LaskuPageViewModel(string connectionString)
+        {
+            _connString = connectionString;
+
+            PoistaLaskuCommand = new Command(async () =>
             {
-                removeMethod.Invoke(laskutCollection, new object[] { selectedInvoice });
+                if (ValittuLasku == null)
+                {
+                    await Application.Current.MainPage.DisplayAlert("Huom", "Valitse ensin lasku.", "OK");
+                    return;
+                }
+
+                bool ok = await Application.Current.MainPage.DisplayAlert(
+                    "Vahvista", $"Poistetaanko lasku #{ValittuLasku.Id}?", "Kyllä", "Ei");
+                if (!ok) return;
+
+                try
+                {
+                    if (ValittuLasku.Id.HasValue)
+                    {
+                        await using var conn = new MySqlConnection(_connString);
+                        await conn.OpenAsync();
+                        const string sql = "DELETE FROM lasku WHERE lasku_id = @id";
+                        await using var cmd = new MySqlCommand(sql, conn);
+                        cmd.Parameters.AddWithValue("@id", ValittuLasku.Id.Value);
+                        await cmd.ExecuteNonQueryAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await Application.Current.MainPage.DisplayAlert(
+                        "Virhe", "Poisto epäonnistui: " + ex.Message, "OK");
+                }
+
+                Laskut.Remove(ValittuLasku);
+                ValittuLasku = null;
+            });
+        }
+
+        public async Task LataaLaskutAsync()
+        {
+            try
+            {
+                Laskut.Clear();
+
+                await using var conn = new MySqlConnection(_connString);
+                await conn.OpenAsync();
+
+                const string sql = @"
+                    SELECT l.lasku_id, l.varaus_id, l.summa, l.alv, l.maksettu,
+                           v.asiakas_id, v.mokki_id, v.varattu_pvm,
+                           v.vahvistus_pvm, v.varattu_alkupvm, v.varattu_loppupvm,
+                           a.etunimi, a.sukunimi,
+                           m.mokkinimi
+                    FROM lasku l
+                    LEFT JOIN varaus v ON v.varaus_id = l.varaus_id
+                    LEFT JOIN asiakas a ON a.asiakas_id = v.asiakas_id
+                    LEFT JOIN mokki m ON m.mokki_id = v.mokki_id
+                    ORDER BY l.lasku_id DESC";
+
+                await using var cmd = new MySqlCommand(sql, conn);
+                await using var rdr = await cmd.ExecuteReaderAsync();
+
+                while (await rdr.ReadAsync())
+                {
+                    var etunimi = rdr.IsDBNull(rdr.GetOrdinal("etunimi")) ? string.Empty : rdr.GetString("etunimi");
+                    var sukunimi = rdr.IsDBNull(rdr.GetOrdinal("sukunimi")) ? string.Empty : rdr.GetString("sukunimi");
+
+                    var item = new LaskuItem
+                    {
+                        Id = rdr.IsDBNull(rdr.GetOrdinal("lasku_id")) ? null : rdr.GetInt32("lasku_id"),
+                        VarausId = rdr.IsDBNull(rdr.GetOrdinal("varaus_id")) ? null : rdr.GetInt32("varaus_id"),
+                        Summa = rdr.IsDBNull(rdr.GetOrdinal("summa")) ? 0 : rdr.GetDouble("summa"),
+                        Alv = rdr.IsDBNull(rdr.GetOrdinal("alv")) ? 0 : rdr.GetDouble("alv"),
+                        Maksettu = rdr.IsDBNull(rdr.GetOrdinal("maksettu")) ? 0.0 : rdr.GetDouble("maksettu"),
+                        AsiakasNimi = $"{etunimi} {sukunimi}".Trim(),
+                        MokkiNimi = rdr.IsDBNull(rdr.GetOrdinal("mokkinimi")) ? string.Empty : rdr.GetString("mokkinimi"),
+                        VarattuPvm = rdr.IsDBNull(rdr.GetOrdinal("varattu_pvm")) ? string.Empty : rdr.GetDateTime("varattu_pvm").ToString("dd.MM.yyyy"),
+                        VarattuAlkuPvm = rdr.IsDBNull(rdr.GetOrdinal("varattu_alkupvm")) ? string.Empty : rdr.GetDateTime("varattu_alkupvm").ToString("dd.MM.yyyy"),
+                        VarattuLoppuPvm = rdr.IsDBNull(rdr.GetOrdinal("varattu_loppupvm")) ? string.Empty : rdr.GetDateTime("varattu_loppupvm").ToString("dd.MM.yyyy")
+                    };
+
+                    Laskut.Add(item);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                await DisplayAlert("Error", "Kokoelmaa ei voi muokata (Remove-metodia ei löydy).", "OK");
-                return;
+                await Application.Current.MainPage.DisplayAlert(
+                    "Virhe", "Laskujen lataus epäonnistui: " + ex.Message, "OK");
+                System.Diagnostics.Debug.WriteLine("LataaLaskutAsync error: " + ex);
             }
         }
 
-        
-        var vmProp = bc.GetType().GetProperty("ValittuLasku");
-        vmProp?.SetValue(bc, null);
+        public event PropertyChangedEventHandler PropertyChanged;
+        void OnPropertyChanged([CallerMemberName] string name = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
 
-        await DisplayAlert("Valmis", $"Lasku {numero} poistettu.", "OK");
+    // ── Model ───────────────────────────────────────────────────────────
+    class LaskuItem
+    {
+        public int? Id { get; set; }
+        public int? VarausId { get; set; }
+        public double Summa { get; set; }
+        public double Alv { get; set; }
+        public double Maksettu { get; set; }
+        public string AsiakasNimi { get; set; } = string.Empty;
+        public string MokkiNimi { get; set; } = string.Empty;
+        public string VarattuPvm { get; set; } = string.Empty;
+        public string VarattuAlkuPvm { get; set; } = string.Empty;
+        public string VarattuLoppuPvm { get; set; } = string.Empty;
+        public double Maksamatta => Summa - Maksettu;
+        public string Otsikko => $"Lasku #{Id} – {AsiakasNimi}";
+        public string SummaText => $"{Summa:F2} € (ALV {Alv}%)";
+        public string MaksettuText => $"{Maksettu:F2} €";
+        public string MaksamattaText => $"{Maksamatta:F2} €";
     }
 }

@@ -8,42 +8,40 @@
           Padding="10"
           ColumnSpacing="15">
 
-        <!-- Vaihtoehto muokata, lisätä jne -->
+        <!-- Napit -->
         <VerticalStackLayout Grid.Column="0"
                              Spacing="10"
+                             VerticalOptions="Start"
                              WidthRequest="150">
 
-            <SearchBar Placeholder="Hae asiakkaita"
+            <SearchBar Placeholder="Hae laskuja"
                        Margin="0,0,0,10"/>
-
-            <Button Text="Näytä laskut"
-                    Clicked="NaytaLaskut_Clicked"/>
 
             <Button Text="Lisää lasku"
                     Clicked="LisaaLasku_Clicked"
                     BackgroundColor="#512BD4"
                     TextColor="White"/>
 
-            <Button Text="Muokkaa laskua"
-                    Clicked="MuokkaaLasku_Clicked"
+            <Button Text="Muokkaa"
+                    Clicked="Muokkaa_Clicked"
                     BackgroundColor="#f0f0f0"
                     TextColor="Black"/>
 
-            <Button Text="Poista lasku"
-                    Clicked="PoistaLasku_Clicked"
+            <Button Text="Poista"
+                    Command="{Binding PoistaLaskuCommand}"
                     BackgroundColor="#E74C3C"
                     TextColor="White"/>
         </VerticalStackLayout>
 
-        <!-- asiakaslista -->
+        <!-- Laskulista -->
         <VerticalStackLayout Grid.Column="1" Spacing="10">
 
-            <Label Text="Kaikki asiakkaat"
+            <Label Text="Kaikki laskut"
                    FontAttributes="Bold"
                    FontSize="16"/>
 
-            <ListView ItemsSource="{Binding Asiakkaat}"
-                      SelectedItem="{Binding ValittuAsiakas}"
+            <ListView ItemsSource="{Binding Laskut}"
+                      SelectedItem="{Binding ValittuLasku}"
                       SelectionMode="Single"
                       HasUnevenRows="True">
 
@@ -51,51 +49,62 @@
                     <DataTemplate>
                         <ViewCell>
                             <Grid Padding="10" ColumnDefinitions="*">
-                                <Label Text="{Binding Nimi}"
-                                       FontAttributes="Bold"
-                                       VerticalOptions="Center"/>
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Otsikko}" FontAttributes="Bold"/>
+                                    <Label Text="{Binding SummaText}" FontSize="12" TextColor="Gray"/>
+                                </VerticalStackLayout>
                             </Grid>
                         </ViewCell>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-
         </VerticalStackLayout>
 
-        <!-- asiakkaat tiedot ja laskut -->
+        <!-- Tietoikkuna -->
         <ScrollView Grid.Column="2">
             <VerticalStackLayout Spacing="10"
                                  Padding="10"
-                                 IsVisible="{Binding ValittuAsiakas, Converter={StaticResource NullToBoolConverter}}">
+                                 IsVisible="{Binding ValittuLasku, Converter={StaticResource NullToBoolConverter}}">
 
-                <Label Text="Valitun asiakkaan tiedot"
+                <Label Text="Laskun tiedot"
                        FontAttributes="Bold"
                        FontSize="18"
                        Margin="0,10,0,5"/>
 
-                <Label Text="Nimi" FontAttributes="Bold"/>
-                <Entry Text="{Binding ValittuAsiakas.Nimi}" IsReadOnly="True"/>
+                <Label Text="Lasku ID:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuLasku.Id}" IsReadOnly="True"/>
 
-                <Label Text="Sähköposti" FontAttributes="Bold"/>
-                <Entry Text="{Binding ValittuAsiakas.Email}" IsReadOnly="True"/>
+                <Label Text="Varaus ID:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuLasku.VarausId}" IsReadOnly="True"/>
 
-                <Label Text="Puhelin" FontAttributes="Bold"/>
-                <Entry Text="{Binding ValittuAsiakas.Puhelin}" IsReadOnly="True"/>
+                <Label Text="Asiakas:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuLasku.AsiakasNimi}" IsReadOnly="True"/>
 
-                <Label Text="Asiakkaan laskut" FontAttributes="Bold" Margin="0,10,0,0"/>
-                <ListView x:Name="InvoiceListView"
-                          ItemsSource="{Binding ValittuAsiakas.Laskut}"
-                          SelectedItem="{Binding ValittuLasku}"
-                          HasUnevenRows="True">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <TextCell Text="{Binding Numero}" Detail="{Binding Summa, StringFormat='€{0:F2}'}"/>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                <Label Text="Mökki:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuLasku.MokkiNimi}" IsReadOnly="True"/>
+
+                <Label Text="Summa (€):" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuLasku.Summa}" IsReadOnly="True"/>
+
+                <Label Text="ALV (%):" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuLasku.Alv}" IsReadOnly="True"/>
+
+                <Label Text="Maksettu (€):" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuLasku.MaksettuText}" IsReadOnly="True"/>
+
+                <Label Text="Maksamatta (€):" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuLasku.MaksamattaText}" IsReadOnly="True"/>
+
+                <Label Text="Varattu pvm:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuLasku.VarattuPvm}" IsReadOnly="True"/>
+
+                <Label Text="Alkupvm:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuLasku.VarattuAlkuPvm}" IsReadOnly="True"/>
+
+                <Label Text="Loppupvm:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuLasku.VarattuLoppuPvm}" IsReadOnly="True"/>
 
             </VerticalStackLayout>
         </ScrollView>
-
     </Grid>
 </ContentPage>

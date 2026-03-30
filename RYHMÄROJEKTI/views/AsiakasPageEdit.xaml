@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="RYHMÄROJEKTI.views.AluePageEdit"
-             Title="Lisää alue">
+             x:Class="RYHMÄROJEKTI.views.AsiakasPageEdit"
+             Title="Lisää asiakas">
     <ScrollView>
         <VerticalStackLayout Padding="15" Spacing="12">
 
             <Label Text="{Binding Title, Source={RelativeSource AncestorType={x:Type ContentPage}}}" FontAttributes="Bold" FontSize="18"/>
 
-            <Label Text="Nimi" />
-            <Entry x:Name="NimiEntry" Placeholder="Alueen nimi"/>
+            <Label Text="Etunimi" />
+            <Entry x:Name="EtunimiEntry" Placeholder="Etunimi"/>
+
+            <Label Text="Sukunimi" />
+            <Entry x:Name="SukunimiEntry" Placeholder="Sukunimi"/>
+
+            <Label Text="Lähiosoite" />
+            <Entry x:Name="LahiosoiteEntry" Placeholder="Lähiosoite"/>
 
             <Label Text="Postinumero" />
             <HorizontalStackLayout Spacing="8">
@@ -25,8 +31,11 @@
                         VerticalOptions="Center" />
             </HorizontalStackLayout>
 
-            <Label Text="Kuvaus" />
-            <Editor x:Name="KuvausEditor" HeightRequest="120" Placeholder="Kirjoita kuvaus..."/>
+            <Label Text="Sähköposti" />
+            <Entry x:Name="EmailEntry" Placeholder="Sähköposti" Keyboard="Email"/>
+
+            <Label Text="Puhelin" />
+            <Entry x:Name="PuhelinnroEntry" Placeholder="Puhelinnumero" Keyboard="Telephone"/>
 
             <HorizontalStackLayout Spacing="10">
                 <Button Text="Tallenna" Clicked="OnSaveClicked" BackgroundColor="#512BD4" TextColor="White"/>

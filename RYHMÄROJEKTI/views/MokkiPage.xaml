@@ -9,101 +9,103 @@
         <!-- Napit -->
         <VerticalStackLayout Grid.Column="0"
                              Spacing="10"
-                             VerticalOptions="Start">
+                             VerticalOptions="Start"
+                             WidthRequest="150">
 
             <SearchBar Placeholder="Hae mökkejä"
-                Margin="5" 
-                Grid.Row="0"
-                />
+                Margin="0,0,0,10"/>
 
-            <Button Text="Lisää Mökki" 
-                Command="{Binding LisaaMokki_Clicked}" 
-                Margin="5" 
-                Grid.Row="1"
-                />
+            <Button Text="Lisää mökki" 
+                Clicked="LisaaMokki_Clicked"
+                BackgroundColor="#512BD4"
+                TextColor="White"/>
 
-            <Button Text="Muokkaa valittua" 
-                Command="{Binding MuokkaaMokkiaCommand}" 
-                Margin="5" 
-                Grid.Row="2"
-                />
+            <Button Text="Muokkaa" 
+                Clicked="Muokkaa_Clicked"
+                BackgroundColor="#f0f0f0"
+                TextColor="Black"/>
 
-            <Button Text="Poista valittu mökki"
+            <Button Text="Poista"
                     BackgroundColor="Red"
                     TextColor="White"
-                Command="{Binding PoistaMokkiCommand}" 
-                Margin="5" 
-                Grid.Row="3"
-                />
+                Command="{Binding PoistaMokkiCommand}"/>
         </VerticalStackLayout>
 
+        <!-- Mökkien lista -->
+        <VerticalStackLayout Grid.Column="1" Spacing="10">
 
-        <!-- Listan järjestys -->
-        <ListView x:Name="MokitListView" 
-                  Grid.Column="1" 
-                  ItemsSource="{Binding Mokit}" 
-                  SelectedItem="{Binding ValittuMokki}"
-                  SelectionMode="Single">
+            <Label Text="Kaikki mökit"
+                   FontAttributes="Bold"
+                   FontSize="16"/>
 
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <ViewCell>
-                        <Grid ColumnDefinitions="*,*">
+            <ListView ItemsSource="{Binding Mokit}" 
+                      SelectedItem="{Binding ValittuMokki}"
+                      SelectionMode="Single"
+                      HasUnevenRows="True">
 
-                            <!-- Pieni thumbnail -->
-                            <Frame Grid.Column="0" 
-                                   WidthRequest="40" 
-                                   HeightRequest="40" 
-                                   CornerRadius="20"
-                                   IsClippedToBounds="True">
-                                <Image Source="{Binding Kuva}" 
-                                       Aspect="AspectFill"/>
-                            </Frame>
-                            <!-- Korjattu binding: käytä Mokki-luokan propertyja -->
-                            <Label Grid.Column="0" 
-                                   Text="{Binding Nimi}" 
-                                   FontAttributes="Bold" 
-                                   />
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Grid Padding="10"
+                                  ColumnDefinitions="Auto,*"
+                                  ColumnSpacing="10">
 
-                        </Grid>
-                    </ViewCell>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+                                <Frame Grid.Column="0" 
+                                       WidthRequest="40" 
+                                       HeightRequest="40" 
+                                       CornerRadius="20"
+                                       IsClippedToBounds="True">
+                                    <Image Source="{Binding Kuva}" 
+                                           Aspect="AspectFill"/>
+                                </Frame>
+
+                                <Label Grid.Column="1" 
+                                       Text="{Binding Mokkinimi}" 
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </VerticalStackLayout>
 
         <!-- Tietoikkuna -->
-        <StackLayout Grid.Column="2"
-                     IsVisible="{Binding ValittuMokki, Converter={StaticResource NullToBoolConverter}}">
+        <ScrollView Grid.Column="2">
+            <VerticalStackLayout Spacing="10"
+                                 Padding="10"
+                                 IsVisible="{Binding ValittuMokki, Converter={StaticResource NullToBoolConverter}}">
 
-            <Frame HeightRequest="200"
-        CornerRadius="10"
-        IsClippedToBounds="True">
-                <Grid>
-                    <Image Source="{Binding ValittuMokki.Kuva}" 
-                Aspect="AspectFill"/>
-                    <Label Text="Ei kuvaa" 
-                IsVisible="{Binding ValittuMokki.Kuva, Converter={StaticResource NullToBoolConverter}}"
-                HorizontalOptions="Center"
-                VerticalOptions="Center"
-                TextColor="Gray"/>
-                </Grid>
-            </Frame>
+                <Label Text="Mökin tiedot"
+                       FontAttributes="Bold"
+                       FontSize="18"
+                       Margin="0,10,0,5"/>
 
-            <Label Text="Nimi"/>
-            <Entry Text="{Binding ValittuMokki.Nimi}" IsReadOnly="True"/>
+                <Label Text="Nimi:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuMokki.Mokkinimi}" IsReadOnly="True"/>
 
-            <Label Text="Katuosoite"/>
-            <Entry Text="{Binding ValittuMokki.Katuosoite}" IsReadOnly="True"/>
+                <Label Text="Katuosoite:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuMokki.Katuosoite}" IsReadOnly="True"/>
 
-            <Label Text="Postinumero"/> 
-            <Entry Text="{Binding ValittuMokki.Postinumero}" IsReadOnly="True"/>
+                <Label Text="Postinumero:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuMokki.Postinro}" IsReadOnly="True"/>
 
-            <Label Text="Postitoimipaikka"/>
-            <Entry Text="{Binding ValittuMokki.Postitoimipaikka}" IsReadOnly="True"/>
+                <Label Text="Postitoimipaikka:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuMokki.Toimipaikka}" IsReadOnly="True"/>
 
-            <Label Text="Kuvaus"/>
-            <Entry Text="{Binding ValittuMokki.Kuvaus}" IsReadOnly="True"/>
+                <Label Text="Hinta (€/yö):" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuMokki.Hinta}" IsReadOnly="True"/>
 
-        </StackLayout>
+                <Label Text="Henkilömäärä:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuMokki.Henkilomaara}" IsReadOnly="True"/>
+
+                <Label Text="Varustelu:" FontAttributes="Bold"/>
+                <Editor Text="{Binding ValittuMokki.Varustelu}" HeightRequest="80" IsReadOnly="True"/>
+
+                <Label Text="Kuvaus:" FontAttributes="Bold"/>
+                <Editor Text="{Binding ValittuMokki.Kuvaus}" HeightRequest="100" IsReadOnly="True"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
     </Grid>
 </ContentPage>

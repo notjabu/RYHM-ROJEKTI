@@ -35,21 +35,26 @@ public partial class AluePage : ContentPage
 
     async void LisaaAlue_Clicked(object sender, EventArgs e)
     {
-        await Shell.Current.GoToAsync("///AluePageEdit");
+        await Shell.Current.GoToAsync("AluePageEdit");
     }
 
     async void Muokkaa_Clicked(object sender, EventArgs e)
     {
-        // Try to read ValittuAlue from the BindingContext (safe reflection)
-        var valittu = BindingContext?.GetType().GetProperty("ValittuAlue")?.GetValue(BindingContext);
-        if (valittu == null)
+        if (BindingContext is not AlueViewModel vm || vm.ValittuAlue == null)
         {
             await DisplayAlert("Huom", "Valitse muokattava alue ensin.", "OK");
             return;
         }
 
-        // Navigate to edit page (absolute route matching AppShell)
-        await Shell.Current.GoToAsync("///AluePageEdit");
+        var alue = vm.ValittuAlue;
+        if (alue.Id.HasValue)
+        {
+            await Shell.Current.GoToAsync($"AluePageEdit?alueId={alue.Id.Value}");
+        }
+        else
+        {
+            await Shell.Current.GoToAsync("AluePageEdit");
+        }
     }
 
     // Simple ViewModel used by the page (keeps everything in one file so you only needed to change this file)
@@ -75,7 +80,7 @@ public partial class AluePage : ContentPage
 
             LisaaAlueCommand = new Command(async () =>
             {
-                await Shell.Current.GoToAsync("///AluePageEdit");
+                await Shell.Current.GoToAsync("AluePageEdit");
             });
 
             PoistaAlueCommand = new Command(async () =>

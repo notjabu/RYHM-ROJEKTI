@@ -16,7 +16,7 @@
             <SearchBar Placeholder="Hae alueita"
                        Margin="0,0,0,10"/>
 
-            <Button Text="Lisää uusi" 
+            <Button Text="Lisää alue" 
                     Command="{Binding LisaaAlueCommand}"
                     Clicked="LisaaAlue_Clicked"
                     BackgroundColor="#512BD4"
@@ -30,7 +30,7 @@
 
             <Button Text="Poista" 
                     Command="{Binding PoistaAlueCommand}"
-                    BackgroundColor="#E74C3C"
+                    BackgroundColor="Red"
                     TextColor="White"/>
         </VerticalStackLayout>
 

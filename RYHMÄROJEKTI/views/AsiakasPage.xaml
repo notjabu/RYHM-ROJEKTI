@@ -1,52 +1,149 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:RYHMÄROJEKTI.ViewModels"
              x:Class="RYHMÄROJEKTI.views.AsiakasPage"
              Title="Asiakasrekisteri">
 
-    <ContentPage.BindingContext>
-        <vm:AsiakasViewModel />
-    </ContentPage.BindingContext>
+    <Grid RowDefinitions="Auto, *"
+          ColumnDefinitions="Auto, *, 2*"
+          Padding="10"
+          ColumnSpacing="15"
+          RowSpacing="15">
 
-    <Grid ColumnDefinitions="300, *" Padding="10" ColumnSpacing="15">
+        <!-- Row 0, Col 0: Napit -->
+        <VerticalStackLayout x:Name="NapitPanel"
+                             Grid.Row="0" Grid.Column="0"
+                             Spacing="10"
+                             VerticalOptions="Start"
+                             WidthRequest="150">
 
-        <VerticalStackLayout Grid.Column="0" Spacing="10">
-            <Label Text="Asiakkaat" FontSize="20" FontAttributes="Bold" />
+            <SearchBar Placeholder="Hae asiakkaita"
+                       Margin="0,0,0,10"/>
 
-            <ListView ItemsSource="{Binding Asiakkaat}" 
+            <Button Text="Lisää asiakas"
+                    Clicked="LisaaAsiakas_Clicked"
+                    BackgroundColor="#512BD4"
+                    TextColor="White"/>
+
+            <Button Text="Muokkaa"
+                    Clicked="Muokkaa_Clicked"
+                    BackgroundColor="#f0f0f0"
+                    TextColor="Black"/>
+
+            <Button Text="Poista"
+                    Command="{Binding PoistaAsiakasCommand}"
+                    BackgroundColor="Red"
+                    TextColor="White"/>
+        </VerticalStackLayout>
+
+        <!-- Row 0, Col 1: Asiakaslista (height matched to buttons) -->
+        <Grid Grid.Row="0" Grid.Column="1"
+              RowDefinitions="Auto, *"
+              HeightRequest="{Binding Source={x:Reference NapitPanel}, Path=Height}">
+            <Label Grid.Row="0" Text="Kaikki asiakkaat"
+                   FontAttributes="Bold"
+                   FontSize="16"
+                   Margin="0,0,0,5"/>
+            <ListView Grid.Row="1"
+                      ItemsSource="{Binding Asiakkaat}"
                       SelectedItem="{Binding ValittuAsiakas}"
-                      HeightRequest="400">
+                      SelectionMode="Single"
+                      HasUnevenRows="True">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <TextCell Text="{Binding KokoNimi}" Detail="{Binding Sahkoposti}" />
+                        <ViewCell>
+                            <Grid Padding="8"
+                                  ColumnDefinitions="Auto,*"
+                                  ColumnSpacing="10">
+                                <Frame Grid.Column="0"
+                                       WidthRequest="36"
+                                       HeightRequest="36"
+                                       CornerRadius="18"
+                                       IsClippedToBounds="True"
+                                       BackgroundColor="#E8E8E8"
+                                       Padding="0">
+                                    <Label Text="👤" FontSize="16" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Frame>
+                                <Label Grid.Column="1"
+                                       Text="{Binding KokoNimi}"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </ViewCell>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+        </Grid>
 
-            <Button Text="Lisää uusi asiakas" Command="{Binding LisaaAsiakasCommand}" BackgroundColor="Blue" TextColor="White" />
-            <Button Text="Poista valittu" Command="{Binding PoistaAsiakasCommand}" BackgroundColor="Red" TextColor="White" />
-        </VerticalStackLayout>
+        <!-- Row 1, Col 0-1: Asiakkaan tiedot (lower-left) -->
+        <ScrollView Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+            <VerticalStackLayout Spacing="8" Padding="10"
+                                 IsVisible="{Binding ValittuAsiakas, Converter={StaticResource NullToBoolConverter}}">
+                <Label Text="Asiakkaan tiedot"
+                       FontAttributes="Bold"
+                       FontSize="16"
+                       Margin="0,0,0,5"/>
 
-        <ScrollView Grid.Column="1" BackgroundColor="#F5F5F5" Padding="15">
-            <VerticalStackLayout Spacing="10">
-                <Label Text="Asiakkaan tiedot" FontSize="18" FontAttributes="Bold" />
+                <Grid ColumnDefinitions="Auto, *"
+                      RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+                      RowSpacing="5" ColumnSpacing="10">
+                    <Label Grid.Row="0" Grid.Column="0" Text="Etunimi:" FontAttributes="Bold" VerticalOptions="Center"/>
+                    <Entry Grid.Row="0" Grid.Column="1" Text="{Binding ValittuAsiakas.Etunimi}" IsReadOnly="True"/>
 
-                <Label Text="Etunimi" />
-                <Entry Text="{Binding ValittuAsiakas.Etunimi}" />
+                    <Label Grid.Row="1" Grid.Column="0" Text="Sukunimi:" FontAttributes="Bold" VerticalOptions="Center"/>
+                    <Entry Grid.Row="1" Grid.Column="1" Text="{Binding ValittuAsiakas.Sukunimi}" IsReadOnly="True"/>
 
-                <Label Text="Sukunimi" />
-                <Entry Text="{Binding ValittuAsiakas.Sukunimi}" />
+                    <Label Grid.Row="2" Grid.Column="0" Text="Lähiosoite:" FontAttributes="Bold" VerticalOptions="Center"/>
+                    <Entry Grid.Row="2" Grid.Column="1" Text="{Binding ValittuAsiakas.Lahiosoite}" IsReadOnly="True"/>
 
-                <Label Text="Sähköposti" />
-                <Entry Text="{Binding ValittuAsiakas.Sahkoposti}" Keyboard="Email" />
+                    <Label Grid.Row="3" Grid.Column="0" Text="Postinumero:" FontAttributes="Bold" VerticalOptions="Center"/>
+                    <Entry Grid.Row="3" Grid.Column="1" Text="{Binding ValittuAsiakas.Postinro}" IsReadOnly="True"/>
 
-                <Label Text="Puhelin" />
-                <Entry Text="{Binding ValittuAsiakas.Puhelinnro}" Keyboard="Telephone" />
+                    <Label Grid.Row="4" Grid.Column="0" Text="Toimipaikka:" FontAttributes="Bold" VerticalOptions="Center"/>
+                    <Entry Grid.Row="4" Grid.Column="1" Text="{Binding ValittuAsiakas.Toimipaikka}" IsReadOnly="True"/>
 
-                <Label Text="Osoite" />
-                <Entry Text="{Binding ValittuAsiakas.Lahiosoite}" />
+                    <Label Grid.Row="5" Grid.Column="0" Text="Sähköposti:" FontAttributes="Bold" VerticalOptions="Center"/>
+                    <Entry Grid.Row="5" Grid.Column="1" Text="{Binding ValittuAsiakas.Email}" IsReadOnly="True"/>
+
+                    <Label Grid.Row="6" Grid.Column="0" Text="Puhelin:" FontAttributes="Bold" VerticalOptions="Center"/>
+                    <Entry Grid.Row="6" Grid.Column="1" Text="{Binding ValittuAsiakas.Puhelinnro}" IsReadOnly="True"/>
+                </Grid>
             </VerticalStackLayout>
         </ScrollView>
+
+        <!-- Row 0-1, Col 2: Kaikki varaukset -->
+        <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="2"
+              RowDefinitions="Auto, *" Padding="10">
+            <Label Grid.Row="0" Text="Asiakasvaraukset"
+                   FontAttributes="Bold"
+                   FontSize="18"
+                   Margin="0,10,0,5"/>
+            <ListView Grid.Row="1"
+                      ItemsSource="{Binding Varaukset}"
+                      HasUnevenRows="True">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Frame Margin="0,0,0,8" Padding="12" CornerRadius="8" BorderColor="#E0E0E0"
+                                   BackgroundColor="{Binding HighlightColor}">
+                                <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto, Auto, Auto"
+                                      RowSpacing="3" ColumnSpacing="10">
+                                    <Label Grid.Row="0" Grid.ColumnSpan="2"
+                                           Text="{Binding AsiakasNimi}" FontAttributes="Bold" FontSize="15"/>
+                                    <Label Grid.Row="1" Grid.ColumnSpan="2"
+                                           Text="{Binding MokkiNimi}" FontSize="14" TextColor="#333"/>
+                                    <Label Grid.Row="2" Grid.Column="0"
+                                           Text="{Binding AikavaliText}" FontSize="13" TextColor="#555"/>
+                                    <Label Grid.Row="3" Grid.Column="0"
+                                           Text="{Binding VarattuPvmText}" FontSize="12" TextColor="Gray"/>
+                                    <Label Grid.Row="3" Grid.Column="1"
+                                           Text="{Binding VahvistusPvmText}" FontSize="12" TextColor="Gray"/>
+                                </Grid>
+                            </Frame>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
     </Grid>
 </ContentPage>
