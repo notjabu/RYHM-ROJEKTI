@@ -4,15 +4,65 @@
              x:Class="RYHMÄROJEKTI.MainPage"
              Title="Etusivu">
 
-    <Grid>
-        <Image 
-        Source="yksi.png"
-        HeightRequest="650"
-        Aspect="AspectFill"
-        />
+        <VerticalStackLayout Padding="20" Spacing="15">
 
-        <Label Text="VILLAGE NEWBIES"
-               FontSize="120"/>
-    </Grid>
+            <!-- Yläosa: logo + yrityksen nimi -->
+            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                <Image Source="yksi.png"
+                       WidthRequest="60"
+                       HeightRequest="60" />
+
+                <Label Text="Village Newbies"
+                       FontSize="20"
+                       VerticalOptions="Center"
+                       FontAttributes="Bold"/>
+            </HorizontalStackLayout>
+
+            <!-- Otsikko -->
+            <Label Text="Mökkien määrä alueittain"
+                   FontSize="18"
+                   FontAttributes="Bold" />
+        
+            <!-- Taulukko -->
+        <Grid RowDefinitions="Auto,*">
+
+            <!-- Otsikkorivi -->
+            <Grid ColumnDefinitions="*,*" Padding="10">
+                <Label Text="Alue"
+               FontAttributes="Bold"/>
+
+                <Label Text="Mökkien määrä"
+               Grid.Column="1"
+               FontAttributes="Bold"
+               HorizontalOptions="End"/>
+            </Grid>
+
+            <!-- Yksi lista -->
+            <ListView Grid.Row="1"
+              ItemsSource="{Binding Tilasto}"
+              HasUnevenRows="True">
+
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Grid ColumnDefinitions="*,*" Padding="10">
+
+                                <!-- Alue -->
+                                <Label Text="{Binding Alue}"
+                               FontAttributes="Bold"/>
+
+                                <!-- Määrä -->
+                                <Label Text="{Binding Maara}"
+                               Grid.Column="1"
+                               HorizontalOptions="End"/>
+                            </Grid>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+
+            </ListView>
+         </Grid>
+
+    </VerticalStackLayout>
 
 </ContentPage>
