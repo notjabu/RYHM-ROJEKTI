@@ -8,6 +8,10 @@ namespace RYHMÄROJEKTI.views;
 [QueryProperty(nameof(AlueId), "alueId")]
 public partial class AluePageEdit : ContentPage
 {
+<<<<<<< HEAD
+=======
+    private const string ConnectionString = "Server=127.0.0.1;Port=3307;Database=vn;User=root;Password=;SslMode=None;";
+>>>>>>> b6bbdf4c78ccac69be220bbb6c26b2955fa82c37
 
     private int? _alueId;
     private string _origNimi = string.Empty;

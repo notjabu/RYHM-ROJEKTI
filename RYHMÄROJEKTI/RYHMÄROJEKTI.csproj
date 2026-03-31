@@ -68,6 +68,11 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.9" />
+<<<<<<< HEAD
+=======
+		<PackageReference Include="MySqlConnector" Version="2.5.0" />
+		<PackageReference Include="QuestPDF" Version="2026.2.4" />
+>>>>>>> b6bbdf4c78ccac69be220bbb6c26b2955fa82c37
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 	</ItemGroup>
 

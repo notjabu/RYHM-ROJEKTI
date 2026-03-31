@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RYHMÄROJEKTI.views.PalveluPageEdit"
              Title="PalveluPageEdit">
-    
+
     <ScrollView>
         <VerticalStackLayout Padding="15" Spacing="12">
             <Button Text="Palaa"
@@ -14,19 +14,17 @@
             <Label Text="Nimi" />
             <Entry x:Name="NimiEntry" Placeholder="Palvelun nimi"/>
 
-            <Label Text="Sijainti" />
-            <Entry x:Name="SijaintiEntry" Placeholder="Kunta / osoite"/>
+            <Label Text="Sijainti (alue)" />
+            <Picker x:Name="SijaintiPicker" Title="Valitse alue" ItemDisplayBinding="{Binding Nimi}" />
 
             <Label Text="Kuvaus" />
             <Editor x:Name="KuvausEditor" HeightRequest="120" Placeholder="Kirjoita kuvaus..."/>
 
-            <Label Text="Kuva" />
-            <Image x:Name="KuvaImage" HeightRequest="180" Aspect="AspectFill" BackgroundColor="#eee"/>
-
-
-
             <HorizontalStackLayout Spacing="10">
-
+                <Button Text="Tallenna"
+                        Pressed="OnSaveClicked"
+                        BackgroundColor="#512BD4"
+                        TextColor="White"/>
             </HorizontalStackLayout>
 
         </VerticalStackLayout>
