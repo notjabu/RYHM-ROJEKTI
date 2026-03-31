@@ -11,14 +11,7 @@ namespace RYHMÄROJEKTI.views;
 
 public partial class AluePage : ContentPage
 {
-<<<<<<< HEAD
-=======
-    // LOCAL CONNECTION STRING - change credentials before running.
-    // For Android emulator connecting to host use Server=10.0.2.2
-    private const string ConnectionString = "Server=127.0.0.1;Port=3307;Database=vn;User=root;Password=;SslMode=None;";
-
->>>>>>> b6bbdf4c78ccac69be220bbb6c26b2955fa82c37
-    public AluePage()
+public AluePage()
     {
         InitializeComponent();
         BindingContext = new AlueViewModel();

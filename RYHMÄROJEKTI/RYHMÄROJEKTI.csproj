@@ -1,11 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<!-- Shorten intermediate path to avoid APT2264 / Windows 260-char limit -->
-	<PropertyGroup>
-		<BaseIntermediateOutputPath>C:\t\RR\obj\</BaseIntermediateOutputPath>
-		<BaseOutputPath>C:\t\RR\bin\</BaseOutputPath>
-	</PropertyGroup>
-
 	<PropertyGroup>
 		<TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
@@ -68,11 +62,8 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.9" />
-<<<<<<< HEAD
-=======
 		<PackageReference Include="MySqlConnector" Version="2.5.0" />
 		<PackageReference Include="QuestPDF" Version="2026.2.4" />
->>>>>>> b6bbdf4c78ccac69be220bbb6c26b2955fa82c37
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 	</ItemGroup>
 
@@ -110,6 +101,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="obj\Debug\" />
 	  <Folder Include="Resources\izetizer\r\drawable\" />
 	</ItemGroup>
 

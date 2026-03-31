@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using RYHMÄROJEKTI.Modeelit;
@@ -42,7 +43,7 @@ namespace RYHMÄROJEKTI.ViewModels
                 {
                     try
                     {
-                        await App.Database.SaveMokkiAsync(ValittuMokki);
+                        await ApiClient.Http.PostAsJsonAsync("/api/mokki", ValittuMokki);
                         await Application.Current.MainPage.DisplayAlert("Tallennus", "Mökki tallennettu tietokantaan!", "OK");
                         // Päivitetään lista, jotta ID:t ja muutokset näkyvät oikein
                         await LataaMokit();
@@ -77,7 +78,7 @@ namespace RYHMÄROJEKTI.ViewModels
         {
             try
             {
-                var tietokantaMokit = await App.Database.GetMokitAsync();
+                var tietokantaMokit = await ApiClient.Http.GetFromJsonAsync<List<Mokki>>("/api/mokki") ?? new();
 
                 Mokit.Clear();
                 foreach (var mokki in tietokantaMokit)

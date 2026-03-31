@@ -15,22 +15,12 @@ namespace RYHMÄROJEKTI.views;
 
 public partial class LaskuPage : ContentPage
 {
-<<<<<<< HEAD
-    public LaskuPage()
-    {
-        InitializeComponent();
-        BindingContext = new LaskuPageViewModel();
-=======
-    private const string ConnectionString = "Server=127.0.0.1;Port=3307;Database=vn;User=root;Password=;SslMode=None;";
-
-    public LaskuPage()
-    {
-        InitializeComponent();
-        // Asetetaan QuestPDF-lisenssi (ilmainen yhteisölisenssi)
-        QuestPDF.Settings.License = LicenseType.Community;
-        BindingContext = new LaskuPageViewModel(ConnectionString);
->>>>>>> b6bbdf4c78ccac69be220bbb6c26b2955fa82c37
-    }
+public LaskuPage()
+{
+    InitializeComponent();
+    QuestPDF.Settings.License = LicenseType.Community;
+    BindingContext = new LaskuPageViewModel();
+}
 
     protected override async void OnAppearing()
     {
@@ -58,10 +48,6 @@ public partial class LaskuPage : ContentPage
     // ── ViewModel ───────────────────────────────────────────────────────
     class LaskuPageViewModel : INotifyPropertyChanged
     {
-<<<<<<< HEAD
-=======
-        private readonly string _connString;
->>>>>>> b6bbdf4c78ccac69be220bbb6c26b2955fa82c37
         public ObservableCollection<LaskuItem> Laskut { get; } = new();
 
         private LaskuItem _valittuLasku;
@@ -77,38 +63,29 @@ public partial class LaskuPage : ContentPage
 
         public LaskuPageViewModel()
         {
-<<<<<<< HEAD
-=======
-            _connString = connectionString;
+LuoPdfLaskuCommand = new Command(async () => await GeneroiPdfAsync());
 
-            // Alustetaan PDF-komento
-            LuoPdfLaskuCommand = new Command(async () => await GeneroiPdfAsync());
-
->>>>>>> b6bbdf4c78ccac69be220bbb6c26b2955fa82c37
-            PoistaLaskuCommand = new Command(async () =>
+PoistaLaskuCommand = new Command(async () =>
             {
                 if (ValittuLasku == null) return;
                 bool ok = await Application.Current.MainPage.DisplayAlert("Vahvista", $"Poistetaanko lasku #{ValittuLasku.Id}?", "Kyllä", "Ei");
                 if (!ok) return;
-<<<<<<< HEAD
 
-                try
-                {
-                    if (ValittuLasku.Id.HasValue)
-                    {
-                        var resp = await ApiClient.Http.DeleteAsync($"/api/lasku/{ValittuLasku.Id.Value}");
-                        resp.EnsureSuccessStatusCode();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    await Application.Current.MainPage.DisplayAlert(
-                        "Virhe", "Poisto epäonnistui: " + ex.Message, "OK");
-                }
+try
+{
+    if (ValittuLasku.Id.HasValue)
+    {
+        var resp = await ApiClient.Http.DeleteAsync($"/api/lasku/{ValittuLasku.Id.Value}");
+        resp.EnsureSuccessStatusCode();
+    }
+}
+catch (Exception ex)
+{
+    await Application.Current.MainPage.DisplayAlert(
+        "Virhe", "Poisto epäonnistui: " + ex.Message, "OK");
+}
 
-=======
->>>>>>> b6bbdf4c78ccac69be220bbb6c26b2955fa82c37
-                Laskut.Remove(ValittuLasku);
+Laskut.Remove(ValittuLasku);
                 ValittuLasku = null;
             });
         }
@@ -176,54 +153,23 @@ public partial class LaskuPage : ContentPage
                 var list = await ApiClient.Http.GetFromJsonAsync<List<LaskuDto>>("/api/lasku");
                 if (list == null) return;
 
-<<<<<<< HEAD
-                foreach (var dto in list)
-                {
-                    Laskut.Add(new LaskuItem
-                    {
-                        Id = dto.Id,
-                        VarausId = dto.VarausId,
-                        Summa = dto.Summa,
-                        Alv = dto.Alv,
-                        Maksettu = dto.Maksettu,
-                        AsiakasNimi = dto.AsiakasNimi ?? string.Empty,
-                        MokkiNimi = dto.MokkiNimi ?? string.Empty,
-                        VarattuPvm = dto.VarattuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
-                        VarattuAlkuPvm = dto.VarattuAlkuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
-                        VarattuLoppuPvm = dto.VarattuLoppuPvm?.ToString("dd.MM.yyyy") ?? string.Empty
-                    });
-=======
-                const string sql = @"
-                    SELECT l.*, v.varattu_pvm, v.varattu_alkupvm, v.varattu_loppupvm,
-                           a.etunimi, a.sukunimi, m.mokkinimi
-                    FROM lasku l
-                    LEFT JOIN varaus v ON v.varaus_id = l.varaus_id
-                    LEFT JOIN asiakas a ON a.asiakas_id = v.asiakas_id
-                    LEFT JOIN mokki m ON m.mokki_id = v.mokki_id
-                    ORDER BY l.lasku_id DESC";
-
-                await using var cmd = new MySqlCommand(sql, conn);
-                await using var rdr = await cmd.ExecuteReaderAsync();
-
-                while (await rdr.ReadAsync())
-                {
-                    var item = new LaskuItem
-                    {
-                        Id = Convert.ToInt32(rdr["lasku_id"]),
-                        VarausId = Convert.ToInt32(rdr["varaus_id"]),
-                        Summa = Convert.ToDouble(rdr["summa"]),
-                        Alv = Convert.ToDouble(rdr["alv"]),
-                        // Tärkeä muunnos SByte -> Double
-                        Maksettu = Convert.ToBoolean(rdr["maksettu"]) ? 1.0 : 0.0,
-                        AsiakasNimi = $"{rdr["etunimi"]} {rdr["sukunimi"]}",
-                        MokkiNimi = rdr["mokkinimi"]?.ToString() ?? "",
-                        VarattuPvm = rdr.IsDBNull(rdr.GetOrdinal("varattu_pvm")) ? "" : rdr.GetDateTime("varattu_pvm").ToString("dd.MM.yyyy")
-                        // Lisää tähän muut pvm-kentät jos tarpeen
-                    };
-                    Laskut.Add(item);
->>>>>>> b6bbdf4c78ccac69be220bbb6c26b2955fa82c37
-                }
-            }
+    foreach (var dto in list)
+    {
+        Laskut.Add(new LaskuItem
+        {
+            Id = dto.Id,
+            VarausId = dto.VarausId,
+            Summa = dto.Summa,
+            Alv = dto.Alv,
+            Maksettu = dto.Maksettu,
+            AsiakasNimi = dto.AsiakasNimi ?? string.Empty,
+            MokkiNimi = dto.MokkiNimi ?? string.Empty,
+            VarattuPvm = dto.VarattuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
+            VarattuAlkupvm = dto.VarattuAlkuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
+            VarattuLoppupvm = dto.VarattuLoppuPvm?.ToString("dd.MM.yyyy") ?? string.Empty
+        });
+    }
+}
             catch (Exception ex)
             {
                 // Hätäcatchi
