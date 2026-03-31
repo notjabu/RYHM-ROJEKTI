@@ -8,14 +8,14 @@
 
             <!-- Yläosa: logo + yrityksen nimi -->
             <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                <Image Source="yksi.png"
-                       WidthRequest="60"
-                       HeightRequest="60" />
+                <Image Source="kaksi.png"
+                       WidthRequest="120"
+                       HeightRequest="120" />
 
                 <Label Text="Village Newbies"
-                       FontSize="20"
-                       VerticalOptions="Center"
-                       FontAttributes="Bold"/>
+                       FontSize="60"
+                       FontAttributes="Italic"
+                       VerticalOptions="Center"/>
             </HorizontalStackLayout>
 
             <!-- Otsikko -->
@@ -35,6 +35,11 @@
                Grid.Column="1"
                FontAttributes="Bold"
                HorizontalOptions="End"/>
+
+                <Label Text="Palveluiden määrä"
+                    Grid.Column="1"
+                    FontAttributes="Bold"
+                    HorizontalOptions="Center"/>
             </Grid>
 
             <!-- Yksi lista -->
@@ -50,6 +55,11 @@
                                 <!-- Alue -->
                                 <Label Text="{Binding Alue}"
                                FontAttributes="Bold"/>
+
+                                <!-- Määrä -->
+                                <Label Text="{Binding Maara2}"
+                                        Grid.Column="1"
+                                        HorizontalOptions="Center"/>
 
                                 <!-- Määrä -->
                                 <Label Text="{Binding Maara}"

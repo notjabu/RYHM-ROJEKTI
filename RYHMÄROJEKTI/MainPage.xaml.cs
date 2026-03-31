@@ -63,5 +63,6 @@ public partial class MainPage : ContentPage
     {
         public string Alue { get; set; }
         public int Maara { get; set; }
+        public int Maara2 { get; set; }
     }
 }

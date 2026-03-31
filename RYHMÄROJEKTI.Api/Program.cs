@@ -538,10 +538,10 @@ app.MapGet("/api/tilasto", async () =>
 {
     await using var conn = await OpenDbAsync();
     const string sql = """
-        SELECT a.nimi AS aluenimi, COUNT(m.mokki_id) AS maara
+        SELECT a.nimi AS aluenimi,
+               (SELECT COUNT(*) FROM vn.mokki   m WHERE m.alue_id = a.alue_id)    AS maara,
+               (SELECT COUNT(*) FROM vn.palvelu p WHERE p.alue_id = a.alue_id)    AS maara2
         FROM vn.alue a
-        LEFT JOIN vn.mokki m ON m.alue_id = a.alue_id
-        GROUP BY a.alue_id, a.nimi
         ORDER BY a.nimi
         """;
     await using var cmd = new SqlCommand(sql, conn);
@@ -550,7 +550,7 @@ app.MapGet("/api/tilasto", async () =>
     var list = new List<TilastoDto>();
     while (await rdr.ReadAsync())
     {
-        list.Add(new TilastoDto(Str(rdr, "aluenimi"), Int(rdr, "maara")));
+        list.Add(new TilastoDto(Str(rdr, "aluenimi"), Int(rdr, "maara"), Int(rdr,"maara2")));
     }
     return Results.Ok(list);
 });
@@ -585,4 +585,4 @@ record LaskuDto(int? Id, int? VarausId, double Summa, double Alv, double Maksett
     DateTime? VarattuPvm, DateTime? VarattuAlkuPvm, DateTime? VarattuLoppuPvm);
 record LaskuSaveDto(int VarausId, double Summa, double Alv, double Maksettu);
 
-record TilastoDto(string Alue, int Maara);
+record TilastoDto(string Alue, int Maara, int Maara2);
