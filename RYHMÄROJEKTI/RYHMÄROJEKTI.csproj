@@ -41,6 +41,12 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 	</PropertyGroup>
 
+	<!-- Fix APT2264: AAPT2 cannot handle non-ASCII characters (Ä) in paths on Windows.
+		 Redirect Android intermediate output to the solution-level obj folder which has an ASCII-only path. -->
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+		<IntermediateOutputPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..'))\\obj\android_intermediate\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />

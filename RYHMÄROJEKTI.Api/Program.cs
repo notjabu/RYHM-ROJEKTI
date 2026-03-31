@@ -532,6 +532,29 @@ app.MapDelete("/api/lasku/{id:int}", async (int id) =>
     return rows > 0 ? Results.Ok() : Results.NotFound();
 });
 
+// ─── Tilasto ────────────────────────────────────────────────────────────────
+
+app.MapGet("/api/tilasto", async () =>
+{
+    await using var conn = await OpenDbAsync();
+    const string sql = """
+        SELECT a.nimi AS aluenimi, COUNT(m.mokki_id) AS maara
+        FROM vn.alue a
+        LEFT JOIN vn.mokki m ON m.alue_id = a.alue_id
+        GROUP BY a.alue_id, a.nimi
+        ORDER BY a.nimi
+        """;
+    await using var cmd = new SqlCommand(sql, conn);
+    await using var rdr = await cmd.ExecuteReaderAsync();
+
+    var list = new List<TilastoDto>();
+    while (await rdr.ReadAsync())
+    {
+        list.Add(new TilastoDto(Str(rdr, "aluenimi"), Int(rdr, "maara")));
+    }
+    return Results.Ok(list);
+});
+
 app.Run();
 
 // ─── DTOs ───────────────────────────────────────────────────────────────────
@@ -561,3 +584,5 @@ record LaskuDto(int? Id, int? VarausId, double Summa, double Alv, double Maksett
     string AsiakasNimi, string MokkiNimi,
     DateTime? VarattuPvm, DateTime? VarattuAlkuPvm, DateTime? VarattuLoppuPvm);
 record LaskuSaveDto(int VarausId, double Summa, double Alv, double Maksettu);
+
+record TilastoDto(string Alue, int Maara);

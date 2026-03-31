@@ -63,29 +63,29 @@ public LaskuPage()
 
         public LaskuPageViewModel()
         {
-LuoPdfLaskuCommand = new Command(async () => await GeneroiPdfAsync());
+            LuoPdfLaskuCommand = new Command(async () => await GeneroiPdfAsync());
 
-PoistaLaskuCommand = new Command(async () =>
+            PoistaLaskuCommand = new Command(async () =>
             {
                 if (ValittuLasku == null) return;
-                bool ok = await Application.Current.MainPage.DisplayAlert("Vahvista", $"Poistetaanko lasku #{ValittuLasku.Id}?", "Kyllä", "Ei");
+                bool ok = await Shell.Current.DisplayAlert("Vahvista", $"Poistetaanko lasku #{ValittuLasku.Id}?", "Kyllä", "Ei");
                 if (!ok) return;
 
-try
-{
-    if (ValittuLasku.Id.HasValue)
-    {
-        var resp = await ApiClient.Http.DeleteAsync($"/api/lasku/{ValittuLasku.Id.Value}");
-        resp.EnsureSuccessStatusCode();
-    }
-}
-catch (Exception ex)
-{
-    await Application.Current.MainPage.DisplayAlert(
-        "Virhe", "Poisto epäonnistui: " + ex.Message, "OK");
-}
+                try
+                {
+                    if (ValittuLasku.Id.HasValue)
+                    {
+                        var resp = await ApiClient.Http.DeleteAsync($"/api/lasku/{ValittuLasku.Id.Value}");
+                        resp.EnsureSuccessStatusCode();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await Shell.Current.DisplayAlert(
+                        "Virhe", "Poisto epäonnistui: " + ex.Message, "OK");
+                }
 
-Laskut.Remove(ValittuLasku);
+                Laskut.Remove(ValittuLasku);
                 ValittuLasku = null;
             });
         }
@@ -95,7 +95,7 @@ Laskut.Remove(ValittuLasku);
         {
             if (ValittuLasku == null)
             {
-                await Application.Current.MainPage.DisplayAlert("Virhe", "Valitse lasku listasta ensin!", "OK");
+                await Shell.Current.DisplayAlert("Virhe", "Valitse lasku listasta ensin!", "OK");
                 return;
             }
 
@@ -140,7 +140,7 @@ Laskut.Remove(ValittuLasku);
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Virhe", "PDF:n luonti epäonnistui: " + ex.Message, "OK");
+                await Shell.Current.DisplayAlert("Virhe", "PDF:n luonti epäonnistui: " + ex.Message, "OK");
             }
         }
 
@@ -153,27 +153,26 @@ Laskut.Remove(ValittuLasku);
                 var list = await ApiClient.Http.GetFromJsonAsync<List<LaskuDto>>("/api/lasku");
                 if (list == null) return;
 
-    foreach (var dto in list)
-    {
-        Laskut.Add(new LaskuItem
-        {
-            Id = dto.Id,
-            VarausId = dto.VarausId,
-            Summa = dto.Summa,
-            Alv = dto.Alv,
-            Maksettu = dto.Maksettu,
-            AsiakasNimi = dto.AsiakasNimi ?? string.Empty,
-            MokkiNimi = dto.MokkiNimi ?? string.Empty,
-            VarattuPvm = dto.VarattuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
-            VarattuAlkupvm = dto.VarattuAlkuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
-            VarattuLoppupvm = dto.VarattuLoppuPvm?.ToString("dd.MM.yyyy") ?? string.Empty
-        });
-    }
-}
+                foreach (var dto in list)
+                {
+                    Laskut.Add(new LaskuItem
+                    {
+                        Id = dto.Id,
+                        VarausId = dto.VarausId,
+                        Summa = dto.Summa,
+                        Alv = dto.Alv,
+                        Maksettu = dto.Maksettu,
+                        AsiakasNimi = dto.AsiakasNimi ?? string.Empty,
+                        MokkiNimi = dto.MokkiNimi ?? string.Empty,
+                        VarattuPvm = dto.VarattuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
+                        VarattuAlkupvm = dto.VarattuAlkuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
+                        VarattuLoppupvm = dto.VarattuLoppuPvm?.ToString("dd.MM.yyyy") ?? string.Empty
+                    });
+                }
+            }
             catch (Exception ex)
             {
-                // Hätäcatchi
-                await Application.Current.MainPage.DisplayAlert("Latausvirhe",
+                await Shell.Current.DisplayAlert("Latausvirhe",
                     $"Virhe koodissa tai kannassa: {ex.Message}", "OK");
                 System.Diagnostics.Debug.WriteLine("LataaLaskutAsync error: " + ex);
             }
