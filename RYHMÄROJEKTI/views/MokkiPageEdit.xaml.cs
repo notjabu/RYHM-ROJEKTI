@@ -1,13 +1,12 @@
-using MySqlConnector;
 using System;
 using System.Collections.Generic;
+using System.Net.Http.Json;
 
 namespace RYHMÄROJEKTI.views;
 
 [QueryProperty(nameof(MokkiId), "mokkiId")]
 public partial class MokkiPageEdit : ContentPage
 {
-    private const string ConnectionString = "Server=127.0.0.1;Port=3306;Database=vn;User=root;Password=YES123;SslMode=None;";
 
     private int? _mokkiId;
     private string _origNimi = string.Empty;
@@ -18,7 +17,7 @@ public partial class MokkiPageEdit : ContentPage
     private string _origVarustelu = string.Empty;
     private string _origKuvaus = string.Empty;
 
-    private readonly List<PostiItem> _postiItems = new();
+    private readonly List<PostiDto> _postiItems = new();
 
     public string MokkiId
     {
@@ -66,20 +65,13 @@ public partial class MokkiPageEdit : ContentPage
             _postiItems.Clear();
             PostiPicker.Items.Clear();
 
-            await using var conn = new MySqlConnection(ConnectionString);
-            await conn.OpenAsync();
+            var list = await ApiClient.Http.GetFromJsonAsync<List<PostiDto>>("/api/posti");
+            if (list == null) return;
 
-            const string sql = "SELECT postinro, toimipaikka FROM posti ORDER BY postinro";
-            await using var cmd = new MySqlCommand(sql, conn);
-            await using var rdr = await cmd.ExecuteReaderAsync();
-
-            while (await rdr.ReadAsync())
+            foreach (var p in list)
             {
-                var postinro = rdr.GetString("postinro");
-                var toimipaikka = rdr.IsDBNull(rdr.GetOrdinal("toimipaikka")) ? string.Empty : rdr.GetString("toimipaikka");
-
-                _postiItems.Add(new PostiItem { Postinro = postinro, Toimipaikka = toimipaikka });
-                PostiPicker.Items.Add($"{postinro} – {toimipaikka}");
+                _postiItems.Add(p);
+                PostiPicker.Items.Add($"{p.Postinro} – {p.Toimipaikka}");
             }
         }
         catch (Exception ex)
@@ -103,15 +95,8 @@ public partial class MokkiPageEdit : ContentPage
 
         try
         {
-            await using var conn = new MySqlConnection(ConnectionString);
-            await conn.OpenAsync();
-
-            const string sql = "INSERT INTO posti (postinro, toimipaikka) VALUES (@postinro, @toimipaikka) " +
-                               "ON DUPLICATE KEY UPDATE toimipaikka = VALUES(toimipaikka)";
-            await using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@postinro", postinro);
-            cmd.Parameters.AddWithValue("@toimipaikka", toimipaikka);
-            await cmd.ExecuteNonQueryAsync();
+            var resp = await ApiClient.Http.PostAsJsonAsync("/api/posti", new PostiDto { Postinro = postinro, Toimipaikka = toimipaikka });
+            resp.EnsureSuccessStatusCode();
 
             await LoadPostiListAsync();
             SelectPostiByPostinro(postinro);
@@ -136,7 +121,7 @@ public partial class MokkiPageEdit : ContentPage
         }
     }
 
-    private PostiItem? GetSelectedPosti()
+    private PostiDto? GetSelectedPosti()
     {
         var idx = PostiPicker.SelectedIndex;
         if (idx >= 0 && idx < _postiItems.Count)
@@ -149,44 +134,25 @@ public partial class MokkiPageEdit : ContentPage
     {
         try
         {
-            await using var conn = new MySqlConnection(ConnectionString);
-            await conn.OpenAsync();
+            var dto = await ApiClient.Http.GetFromJsonAsync<MokkiDto>($"/api/mokki/{id}");
 
-            const string sql = @"
-                SELECT mokkinimi, katuosoite, postinro, hinta,
-                       henkilomaara, varustelu, kuvaus
-                FROM mokki
-                WHERE mokki_id = @id";
-
-            await using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@id", id);
-            await using var rdr = await cmd.ExecuteReaderAsync();
-
-            if (await rdr.ReadAsync())
+            if (dto != null)
             {
-                var nimi = rdr.IsDBNull(rdr.GetOrdinal("mokkinimi")) ? string.Empty : rdr.GetString("mokkinimi");
-                var katu = rdr.IsDBNull(rdr.GetOrdinal("katuosoite")) ? string.Empty : rdr.GetString("katuosoite");
-                var postinro = rdr.IsDBNull(rdr.GetOrdinal("postinro")) ? string.Empty : rdr.GetString("postinro");
-                var hinta = rdr.IsDBNull(rdr.GetOrdinal("hinta")) ? 0.0 : rdr.GetDouble("hinta");
-                var henkilomaara = rdr.IsDBNull(rdr.GetOrdinal("henkilomaara")) ? 0 : rdr.GetInt32("henkilomaara");
-                var varustelu = rdr.IsDBNull(rdr.GetOrdinal("varustelu")) ? string.Empty : rdr.GetString("varustelu");
-                var kuvaus = rdr.IsDBNull(rdr.GetOrdinal("kuvaus")) ? string.Empty : rdr.GetString("kuvaus");
+                NimiEntry.Text = dto.Mokkinimi ?? string.Empty;
+                KatuosoiteEntry.Text = dto.Katuosoite ?? string.Empty;
+                SelectPostiByPostinro(dto.Postinro ?? string.Empty);
+                HintaEntry.Text = dto.Hinta.ToString("0.##");
+                HenkilomaaraEntry.Text = dto.Henkilomaara.ToString();
+                VarusteluEditor.Text = dto.Varustelu ?? string.Empty;
+                KuvausEditor.Text = dto.Kuvaus ?? string.Empty;
 
-                NimiEntry.Text = nimi;
-                KatuosoiteEntry.Text = katu;
-                SelectPostiByPostinro(postinro);
-                HintaEntry.Text = hinta.ToString("0.##");
-                HenkilomaaraEntry.Text = henkilomaara.ToString();
-                VarusteluEditor.Text = varustelu;
-                KuvausEditor.Text = kuvaus;
-
-                _origNimi = nimi;
-                _origKatuosoite = katu;
-                _origPostinro = postinro;
-                _origHinta = hinta;
-                _origHenkilomaara = henkilomaara;
-                _origVarustelu = varustelu;
-                _origKuvaus = kuvaus;
+                _origNimi = dto.Mokkinimi ?? string.Empty;
+                _origKatuosoite = dto.Katuosoite ?? string.Empty;
+                _origPostinro = dto.Postinro ?? string.Empty;
+                _origHinta = dto.Hinta;
+                _origHenkilomaara = dto.Henkilomaara;
+                _origVarustelu = dto.Varustelu ?? string.Empty;
+                _origKuvaus = dto.Kuvaus ?? string.Empty;
             }
             else
             {
@@ -222,7 +188,6 @@ public partial class MokkiPageEdit : ContentPage
         if (!double.TryParse(HintaEntry.Text?.Trim(), System.Globalization.NumberStyles.Any,
             System.Globalization.CultureInfo.InvariantCulture, out var hinta))
         {
-            // Try with current culture as fallback (comma decimal separator)
             if (!double.TryParse(HintaEntry.Text?.Trim(), out hinta))
                 hinta = 0;
         }
@@ -235,6 +200,17 @@ public partial class MokkiPageEdit : ContentPage
             await DisplayAlert("Virhe", "Anna nimi.", "OK");
             return;
         }
+
+        var saveDto = new MokkiSaveDto
+        {
+            Mokkinimi = nimi,
+            Katuosoite = katuosoite,
+            Postinro = postinro,
+            Hinta = hinta,
+            Henkilomaara = henkilomaara,
+            Varustelu = varustelu,
+            Kuvaus = kuvaus
+        };
 
         // ── Editing ─────────────────────────────────────────────────────
         if (_mokkiId.HasValue)
@@ -250,40 +226,11 @@ public partial class MokkiPageEdit : ContentPage
 
             try
             {
-                await using var conn = new MySqlConnection(ConnectionString);
-                await conn.OpenAsync();
-                var transaction = await conn.BeginTransactionAsync();
-                try
-                {
-                    const string updateSql = @"
-                        UPDATE mokki
-                        SET mokkinimi = @nimi, katuosoite = @katu, postinro = @postinro,
-                            hinta = @hinta, henkilomaara = @henkilomaara,
-                            varustelu = @varustelu, kuvaus = @kuvaus,
-                            alue_id = (SELECT alue_id FROM alue WHERE sijainti = (SELECT toimipaikka FROM posti WHERE postinro = @postinro) LIMIT 1)
-                        WHERE mokki_id = @id";
-                    await using var cmd = new MySqlCommand(updateSql, conn);
-                    cmd.Transaction = transaction;
-                    cmd.Parameters.AddWithValue("@nimi", nimi);
-                    cmd.Parameters.AddWithValue("@katu", katuosoite);
-                    cmd.Parameters.AddWithValue("@postinro", postinro);
-                    cmd.Parameters.AddWithValue("@hinta", hinta);
-                    cmd.Parameters.AddWithValue("@henkilomaara", henkilomaara);
-                    cmd.Parameters.AddWithValue("@varustelu", varustelu);
-                    cmd.Parameters.AddWithValue("@kuvaus", kuvaus);
-                    cmd.Parameters.AddWithValue("@id", _mokkiId.Value);
-                    await cmd.ExecuteNonQueryAsync();
-
-                    await transaction.CommitAsync();
-                    await DisplayAlert("Valmis", "Muutokset tallennettu.", "OK");
-                    _mokkiId = null;
-                    await Shell.Current.GoToAsync("..");
-                }
-                catch
-                {
-                    try { await transaction.RollbackAsync(); } catch { }
-                    throw;
-                }
+                var resp = await ApiClient.Http.PutAsJsonAsync($"/api/mokki/{_mokkiId.Value}", saveDto);
+                resp.EnsureSuccessStatusCode();
+                await DisplayAlert("Valmis", "Muutokset tallennettu.", "OK");
+                _mokkiId = null;
+                await Shell.Current.GoToAsync("..");
             }
             catch (Exception ex)
             {
@@ -295,47 +242,14 @@ public partial class MokkiPageEdit : ContentPage
         // ── Creating new ────────────────────────────────────────────────
         try
         {
-            await using var conn = new MySqlConnection(ConnectionString);
-            await conn.OpenAsync();
-            var transaction = await conn.BeginTransactionAsync();
-            try
-            {
-                const string insertSql = @"
-                    INSERT INTO mokki (alue_id, mokkinimi, katuosoite, postinro, hinta,
-                                      henkilomaara, varustelu, kuvaus)
-                    VALUES ((SELECT alue_id FROM alue WHERE sijainti = (SELECT toimipaikka FROM posti WHERE postinro = @postinro) LIMIT 1),
-                            @nimi, @katu, @postinro, @hinta,
-                            @henkilomaara, @varustelu, @kuvaus)";
-                await using var cmd = new MySqlCommand(insertSql, conn);
-                cmd.Transaction = transaction;
-                cmd.Parameters.AddWithValue("@nimi", nimi);
-                cmd.Parameters.AddWithValue("@katu", katuosoite);
-                cmd.Parameters.AddWithValue("@postinro", postinro);
-                cmd.Parameters.AddWithValue("@hinta", hinta);
-                cmd.Parameters.AddWithValue("@henkilomaara", henkilomaara);
-                cmd.Parameters.AddWithValue("@varustelu", varustelu);
-                cmd.Parameters.AddWithValue("@kuvaus", kuvaus);
-                await cmd.ExecuteNonQueryAsync();
-
-                await transaction.CommitAsync();
-                await DisplayAlert("Valmis", "Mökki tallennettu.", "OK");
-                await Shell.Current.GoToAsync("..");
-            }
-            catch
-            {
-                try { await transaction.RollbackAsync(); } catch { }
-                throw;
-            }
+            var resp = await ApiClient.Http.PostAsJsonAsync("/api/mokki", saveDto);
+            resp.EnsureSuccessStatusCode();
+            await DisplayAlert("Valmis", "Mökki tallennettu.", "OK");
+            await Shell.Current.GoToAsync("..");
         }
         catch (Exception ex)
         {
             await DisplayAlert("Tietokantavirhe", ex.Message, "OK");
         }
-    }
-
-    private class PostiItem
-    {
-        public string Postinro { get; set; } = string.Empty;
-        public string Toimipaikka { get; set; } = string.Empty;
     }
 }

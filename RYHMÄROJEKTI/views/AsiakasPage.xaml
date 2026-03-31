@@ -129,7 +129,7 @@
                                 <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto, Auto, Auto"
                                       RowSpacing="3" ColumnSpacing="10">
                                     <Label Grid.Row="0" Grid.ColumnSpan="2"
-                                           Text="{Binding AsiakasNimi}" FontAttributes="Bold" FontSize="15"/>
+                                           Text="{Binding AsiakasNimi}" FontAttributes="Bold" FontSize="15" TextColor="Black"/>
                                     <Label Grid.Row="1" Grid.ColumnSpan="2"
                                            Text="{Binding MokkiNimi}" FontSize="14" TextColor="#333"/>
                                     <Label Grid.Row="2" Grid.Column="0"

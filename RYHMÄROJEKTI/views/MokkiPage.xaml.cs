@@ -1,22 +1,20 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
-using MySqlConnector;
 using System.Threading.Tasks;
 
 namespace RYHMÄROJEKTI.views;
 
 public partial class MokkiPage : ContentPage
 {
-	private const string ConnectionString = "Server=127.0.0.1;Port=3306;Database=vn;User=root;Password=YES123;SslMode=None;";
-
 	public MokkiPage()
 	{
 		InitializeComponent();
-		BindingContext = new MokkiPageViewModel(ConnectionString);
+		BindingContext = new MokkiPageViewModel();
 	}
 
 	protected override async void OnAppearing()
@@ -55,8 +53,6 @@ public partial class MokkiPage : ContentPage
 	// ── ViewModel ───────────────────────────────────────────────────────
 	class MokkiPageViewModel : INotifyPropertyChanged
 	{
-		private readonly string _connString;
-
 		public ObservableCollection<MokkiItem> Mokit { get; } = new();
 
 		private MokkiItem _valittuMokki;
@@ -68,10 +64,8 @@ public partial class MokkiPage : ContentPage
 
 		public ICommand PoistaMokkiCommand { get; }
 
-		public MokkiPageViewModel(string connectionString)
+		public MokkiPageViewModel()
 		{
-			_connString = connectionString;
-
 			PoistaMokkiCommand = new Command(async () =>
 			{
 				if (ValittuMokki == null)
@@ -88,12 +82,8 @@ public partial class MokkiPage : ContentPage
 				{
 					if (ValittuMokki.Id.HasValue)
 					{
-						await using var conn = new MySqlConnection(_connString);
-						await conn.OpenAsync();
-						const string sql = "DELETE FROM mokki WHERE mokki_id = @id";
-						await using var cmd = new MySqlCommand(sql, conn);
-						cmd.Parameters.AddWithValue("@id", ValittuMokki.Id.Value);
-						await cmd.ExecuteNonQueryAsync();
+						var resp = await ApiClient.Http.DeleteAsync($"/api/mokki/{ValittuMokki.Id.Value}");
+						resp.EnsureSuccessStatusCode();
 					}
 				}
 				catch (Exception ex)
@@ -113,38 +103,24 @@ public partial class MokkiPage : ContentPage
 			{
 				Mokit.Clear();
 
-				await using var conn = new MySqlConnection(_connString);
-				await conn.OpenAsync();
+				var list = await ApiClient.Http.GetFromJsonAsync<List<MokkiDto>>("/api/mokki");
+				if (list == null) return;
 
-				const string sql = @"
-					SELECT m.mokki_id, m.alue_id, m.postinro, m.mokkinimi,
-						   m.katuosoite, m.hinta, m.kuvaus,
-						   m.henkilomaara, m.varustelu,
-						   p.toimipaikka
-					FROM mokki m
-					LEFT JOIN posti p ON p.postinro = m.postinro
-					ORDER BY m.mokkinimi";
-
-				await using var cmd = new MySqlCommand(sql, conn);
-				await using var rdr = await cmd.ExecuteReaderAsync();
-
-				while (await rdr.ReadAsync())
+				foreach (var dto in list)
 				{
-					var item = new MokkiItem
+					Mokit.Add(new MokkiItem
 					{
-						Id = rdr.IsDBNull(rdr.GetOrdinal("mokki_id")) ? null : rdr.GetInt32("mokki_id"),
-						AlueId = rdr.IsDBNull(rdr.GetOrdinal("alue_id")) ? null : rdr.GetInt32("alue_id"),
-						Postinro = rdr.IsDBNull(rdr.GetOrdinal("postinro")) ? string.Empty : rdr.GetString("postinro"),
-						Mokkinimi = rdr.IsDBNull(rdr.GetOrdinal("mokkinimi")) ? string.Empty : rdr.GetString("mokkinimi"),
-						Katuosoite = rdr.IsDBNull(rdr.GetOrdinal("katuosoite")) ? string.Empty : rdr.GetString("katuosoite"),
-						Hinta = rdr.IsDBNull(rdr.GetOrdinal("hinta")) ? 0 : rdr.GetDouble("hinta"),
-						Kuvaus = rdr.IsDBNull(rdr.GetOrdinal("kuvaus")) ? string.Empty : rdr.GetString("kuvaus"),
-						Henkilomaara = rdr.IsDBNull(rdr.GetOrdinal("henkilomaara")) ? 0 : rdr.GetInt32("henkilomaara"),
-						Varustelu = rdr.IsDBNull(rdr.GetOrdinal("varustelu")) ? string.Empty : rdr.GetString("varustelu"),
-						Toimipaikka = rdr.IsDBNull(rdr.GetOrdinal("toimipaikka")) ? string.Empty : rdr.GetString("toimipaikka")
-					};
-
-					Mokit.Add(item);
+						Id = dto.Id,
+						AlueId = dto.AlueId,
+						Postinro = dto.Postinro ?? string.Empty,
+						Mokkinimi = dto.Mokkinimi ?? string.Empty,
+						Katuosoite = dto.Katuosoite ?? string.Empty,
+						Hinta = dto.Hinta,
+						Kuvaus = dto.Kuvaus ?? string.Empty,
+						Henkilomaara = dto.Henkilomaara,
+						Varustelu = dto.Varustelu ?? string.Empty,
+						Toimipaikka = dto.Toimipaikka ?? string.Empty
+					});
 				}
 			}
 			catch (Exception ex)

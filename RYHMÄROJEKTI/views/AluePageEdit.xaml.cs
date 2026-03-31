@@ -1,21 +1,20 @@
 using Microsoft.Maui.Storage;
-using MySqlConnector;
 using System;
 using System.Collections.Generic;
+using System.Net.Http.Json;
 
 namespace RYHMÄROJEKTI.views;
 
 [QueryProperty(nameof(AlueId), "alueId")]
 public partial class AluePageEdit : ContentPage
 {
-    private const string ConnectionString = "Server=127.0.0.1;Port=3306;Database=vn;User=root;Password=YES123;SslMode=None;";
 
     private int? _alueId;
     private string _origNimi = string.Empty;
     private string _origPostinumero = string.Empty;
     private string _origKuvaus = string.Empty;
 
-    private readonly List<PostiItem> _postiItems = new();
+    private readonly List<PostiDto> _postiItems = new();
 
     public string AlueId
     {
@@ -58,20 +57,13 @@ public partial class AluePageEdit : ContentPage
             _postiItems.Clear();
             PostiPicker.Items.Clear();
 
-            await using var conn = new MySqlConnection(ConnectionString);
-            await conn.OpenAsync();
+            var list = await ApiClient.Http.GetFromJsonAsync<List<PostiDto>>("/api/posti");
+            if (list == null) return;
 
-            const string sql = "SELECT postinro, toimipaikka FROM posti ORDER BY postinro";
-            await using var cmd = new MySqlCommand(sql, conn);
-            await using var rdr = await cmd.ExecuteReaderAsync();
-
-            while (await rdr.ReadAsync())
+            foreach (var p in list)
             {
-                var postinro = rdr.GetString("postinro");
-                var toimipaikka = rdr.IsDBNull(rdr.GetOrdinal("toimipaikka")) ? string.Empty : rdr.GetString("toimipaikka");
-
-                _postiItems.Add(new PostiItem { Postinro = postinro, Toimipaikka = toimipaikka });
-                PostiPicker.Items.Add($"{postinro} – {toimipaikka}");
+                _postiItems.Add(p);
+                PostiPicker.Items.Add($"{p.Postinro} – {p.Toimipaikka}");
             }
         }
         catch (Exception ex)
@@ -97,15 +89,8 @@ public partial class AluePageEdit : ContentPage
 
         try
         {
-            await using var conn = new MySqlConnection(ConnectionString);
-            await conn.OpenAsync();
-
-            const string sql = "INSERT INTO posti (postinro, toimipaikka) VALUES (@postinro, @toimipaikka) " +
-                               "ON DUPLICATE KEY UPDATE toimipaikka = VALUES(toimipaikka)";
-            await using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@postinro", postinro);
-            cmd.Parameters.AddWithValue("@toimipaikka", toimipaikka);
-            await cmd.ExecuteNonQueryAsync();
+            var resp = await ApiClient.Http.PostAsJsonAsync("/api/posti", new PostiDto { Postinro = postinro, Toimipaikka = toimipaikka });
+            resp.EnsureSuccessStatusCode();
 
             await LoadPostiListAsync();
             SelectPostiByPostinro(postinro);
@@ -130,7 +115,7 @@ public partial class AluePageEdit : ContentPage
         }
     }
 
-    private PostiItem? GetSelectedPosti()
+    private PostiDto? GetSelectedPosti()
     {
         var idx = PostiPicker.SelectedIndex;
         if (idx >= 0 && idx < _postiItems.Count)
@@ -142,32 +127,17 @@ public partial class AluePageEdit : ContentPage
     {
         try
         {
-            await using var conn = new MySqlConnection(ConnectionString);
-            await conn.OpenAsync();
+            var dto = await ApiClient.Http.GetFromJsonAsync<AlueDto>($"/api/alue/{id}");
 
-            const string sql = @"
-                SELECT a.nimi, a.sijainti, a.kuvaus, p.postinro
-                FROM alue a
-                LEFT JOIN posti p ON p.toimipaikka = a.sijainti
-                WHERE a.alue_id = @id";
-
-            await using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@id", id);
-            await using var rdr = await cmd.ExecuteReaderAsync();
-
-            if (await rdr.ReadAsync())
+            if (dto != null)
             {
-                var nimi = rdr.IsDBNull(rdr.GetOrdinal("nimi")) ? string.Empty : rdr.GetString("nimi");
-                var postinro = rdr.IsDBNull(rdr.GetOrdinal("postinro")) ? string.Empty : rdr.GetString("postinro");
-                var kuvaus = rdr.IsDBNull(rdr.GetOrdinal("kuvaus")) ? string.Empty : rdr.GetString("kuvaus");
+                NimiEntry.Text = dto.Nimi ?? string.Empty;
+                KuvausEditor.Text = dto.Kuvaus ?? string.Empty;
+                SelectPostiByPostinro(dto.Postinumero ?? string.Empty);
 
-                NimiEntry.Text = nimi;
-                KuvausEditor.Text = kuvaus;
-                SelectPostiByPostinro(postinro);
-
-                _origNimi = nimi;
-                _origPostinumero = postinro;
-                _origKuvaus = kuvaus;
+                _origNimi = dto.Nimi ?? string.Empty;
+                _origPostinumero = dto.Postinumero ?? string.Empty;
+                _origKuvaus = dto.Kuvaus ?? string.Empty;
             }
             else
             {
@@ -219,6 +189,8 @@ public partial class AluePageEdit : ContentPage
             return;
         }
 
+        var saveDto = new AlueSaveDto { Nimi = nimi, Sijainti = postitoimipaikka, Kuvaus = kuvaus };
+
         // Editing existing record
         if (_alueId.HasValue)
         {
@@ -231,30 +203,11 @@ public partial class AluePageEdit : ContentPage
 
             try
             {
-                await using var conn = new MySqlConnection(ConnectionString);
-                await conn.OpenAsync();
-                var transaction = await conn.BeginTransactionAsync();
-                try
-                {
-                    const string updateSql = "UPDATE alue SET nimi = @nimi, sijainti = @sijainti, kuvaus = @kuvaus WHERE alue_id = @id";
-                    await using var updateCmd = new MySqlCommand(updateSql, conn);
-                    updateCmd.Transaction = transaction;
-                    updateCmd.Parameters.AddWithValue("@nimi", nimi);
-                    updateCmd.Parameters.AddWithValue("@sijainti", postitoimipaikka);
-                    updateCmd.Parameters.AddWithValue("@kuvaus", kuvaus);
-                    updateCmd.Parameters.AddWithValue("@id", _alueId.Value);
-                    await updateCmd.ExecuteNonQueryAsync();
-
-                    await transaction.CommitAsync();
-                    await DisplayAlert("Valmis", "Muutokset tallennettu.", "OK");
-                    _alueId = null;
-                    await Shell.Current.GoToAsync("..");
-                }
-                catch
-                {
-                    try { await transaction.RollbackAsync(); } catch { }
-                    throw;
-                }
+                var resp = await ApiClient.Http.PutAsJsonAsync($"/api/alue/{_alueId.Value}", saveDto);
+                resp.EnsureSuccessStatusCode();
+                await DisplayAlert("Valmis", "Muutokset tallennettu.", "OK");
+                _alueId = null;
+                await Shell.Current.GoToAsync("..");
             }
             catch (Exception ex)
             {
@@ -266,38 +219,14 @@ public partial class AluePageEdit : ContentPage
         // Creating new record
         try
         {
-            await using var conn = new MySqlConnection(ConnectionString);
-            await conn.OpenAsync();
-            var transaction = await conn.BeginTransactionAsync();
-            try
-            {
-                const string alueSql = "INSERT INTO alue (nimi, sijainti, kuvaus) VALUES (@nimi, @sijainti, @kuvaus)";
-                await using var alueCmd = new MySqlCommand(alueSql, conn);
-                alueCmd.Transaction = transaction;
-                alueCmd.Parameters.AddWithValue("@nimi", nimi);
-                alueCmd.Parameters.AddWithValue("@sijainti", postitoimipaikka);
-                alueCmd.Parameters.AddWithValue("@kuvaus", kuvaus);
-                await alueCmd.ExecuteNonQueryAsync();
-
-                await transaction.CommitAsync();
-                await DisplayAlert("Valmis", "Alue tallennettu.", "OK");
-                await Shell.Current.GoToAsync("..");
-            }
-            catch
-            {
-                try { await transaction.RollbackAsync(); } catch { }
-                throw;
-            }
+            var resp = await ApiClient.Http.PostAsJsonAsync("/api/alue", saveDto);
+            resp.EnsureSuccessStatusCode();
+            await DisplayAlert("Valmis", "Alue tallennettu.", "OK");
+            await Shell.Current.GoToAsync("..");
         }
         catch (Exception ex)
         {
             await DisplayAlert("Tietokantavirhe", ex.Message, "OK");
         }
-    }
-
-    private class PostiItem
-    {
-        public string Postinro { get; set; } = string.Empty;
-        public string Toimipaikka { get; set; } = string.Empty;
     }
 }

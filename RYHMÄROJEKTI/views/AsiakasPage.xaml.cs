@@ -1,22 +1,20 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
-using MySqlConnector;
 using System.Threading.Tasks;
 
 namespace RYHMÄROJEKTI.views;
 
 public partial class AsiakasPage : ContentPage
 {
-	private const string ConnectionString = "Server=127.0.0.1;Port=3306;Database=vn;User=root;Password=YES123;SslMode=None;";
-
 	public AsiakasPage()
 	{
 		InitializeComponent();
-		BindingContext = new AsiakasPageViewModel(ConnectionString);
+		BindingContext = new AsiakasPageViewModel();
 	}
 
 	protected override async void OnAppearing()
@@ -56,8 +54,6 @@ public partial class AsiakasPage : ContentPage
 	// ── ViewModel ───────────────────────────────────────────────────────
 	class AsiakasPageViewModel : INotifyPropertyChanged
 	{
-		private readonly string _connString;
-
 		public ObservableCollection<AsiakasItem> Asiakkaat { get; } = new();
 		public ObservableCollection<VarausItem> Varaukset { get; } = new();
 
@@ -75,10 +71,8 @@ public partial class AsiakasPage : ContentPage
 
 		public ICommand PoistaAsiakasCommand { get; }
 
-		public AsiakasPageViewModel(string connectionString)
+		public AsiakasPageViewModel()
 		{
-			_connString = connectionString;
-
 			PoistaAsiakasCommand = new Command(async () =>
 			{
 				if (ValittuAsiakas == null)
@@ -95,12 +89,8 @@ public partial class AsiakasPage : ContentPage
 				{
 					if (ValittuAsiakas.Id.HasValue)
 					{
-						await using var conn = new MySqlConnection(_connString);
-						await conn.OpenAsync();
-						const string sql = "DELETE FROM asiakas WHERE asiakas_id = @id";
-						await using var cmd = new MySqlCommand(sql, conn);
-						cmd.Parameters.AddWithValue("@id", ValittuAsiakas.Id.Value);
-						await cmd.ExecuteNonQueryAsync();
+						var resp = await ApiClient.Http.DeleteAsync($"/api/asiakas/{ValittuAsiakas.Id.Value}");
+						resp.EnsureSuccessStatusCode();
 					}
 				}
 				catch (Exception ex)
@@ -120,35 +110,22 @@ public partial class AsiakasPage : ContentPage
 			{
 				Asiakkaat.Clear();
 
-				await using var conn = new MySqlConnection(_connString);
-				await conn.OpenAsync();
+				var list = await ApiClient.Http.GetFromJsonAsync<List<AsiakasDto>>("/api/asiakas");
+				if (list == null) return;
 
-				const string sql = @"
-					SELECT a.asiakas_id, a.etunimi, a.sukunimi, a.lahiosoite,
-						   a.postinro, a.email, a.puhelinnro,
-						   p.toimipaikka
-					FROM asiakas a
-					LEFT JOIN posti p ON p.postinro = a.postinro
-					ORDER BY a.sukunimi, a.etunimi";
-
-				await using var cmd = new MySqlCommand(sql, conn);
-				await using var rdr = await cmd.ExecuteReaderAsync();
-
-				while (await rdr.ReadAsync())
+				foreach (var dto in list)
 				{
-					var item = new AsiakasItem
+					Asiakkaat.Add(new AsiakasItem
 					{
-						Id = rdr.IsDBNull(rdr.GetOrdinal("asiakas_id")) ? null : rdr.GetInt32("asiakas_id"),
-						Etunimi = rdr.IsDBNull(rdr.GetOrdinal("etunimi")) ? string.Empty : rdr.GetString("etunimi"),
-						Sukunimi = rdr.IsDBNull(rdr.GetOrdinal("sukunimi")) ? string.Empty : rdr.GetString("sukunimi"),
-						Lahiosoite = rdr.IsDBNull(rdr.GetOrdinal("lahiosoite")) ? string.Empty : rdr.GetString("lahiosoite"),
-						Postinro = rdr.IsDBNull(rdr.GetOrdinal("postinro")) ? string.Empty : rdr.GetString("postinro"),
-						Email = rdr.IsDBNull(rdr.GetOrdinal("email")) ? string.Empty : rdr.GetString("email"),
-						Puhelinnro = rdr.IsDBNull(rdr.GetOrdinal("puhelinnro")) ? string.Empty : rdr.GetString("puhelinnro"),
-						Toimipaikka = rdr.IsDBNull(rdr.GetOrdinal("toimipaikka")) ? string.Empty : rdr.GetString("toimipaikka")
-					};
-
-					Asiakkaat.Add(item);
+						Id = dto.Id,
+						Etunimi = dto.Etunimi ?? string.Empty,
+						Sukunimi = dto.Sukunimi ?? string.Empty,
+						Lahiosoite = dto.Lahiosoite ?? string.Empty,
+						Postinro = dto.Postinro ?? string.Empty,
+						Email = dto.Email ?? string.Empty,
+						Puhelinnro = dto.Puhelinnro ?? string.Empty,
+						Toimipaikka = dto.Toimipaikka ?? string.Empty
+					});
 				}
 			}
 			catch (Exception ex)
@@ -172,39 +149,22 @@ public partial class AsiakasPage : ContentPage
 			{
 				Varaukset.Clear();
 
-				await using var conn = new MySqlConnection(_connString);
-				await conn.OpenAsync();
+				var list = await ApiClient.Http.GetFromJsonAsync<List<VarausDto>>("/api/varaus");
+				if (list == null) return;
 
-				const string sql = @"
-					SELECT v.varaus_id, v.asiakas_id, v.mokki_id,
-						   v.varattu_pvm, v.vahvistus_pvm,
-						   v.varattu_alkupvm, v.varattu_loppupvm,
-						   a.etunimi, a.sukunimi,
-						   m.mokkinimi
-					FROM varaus v
-					LEFT JOIN asiakas a ON a.asiakas_id = v.asiakas_id
-					LEFT JOIN mokki m ON m.mokki_id = v.mokki_id
-					ORDER BY v.varattu_alkupvm DESC";
-
-				await using var cmd = new MySqlCommand(sql, conn);
-				await using var rdr = await cmd.ExecuteReaderAsync();
-
-				while (await rdr.ReadAsync())
+				foreach (var dto in list)
 				{
-					var etunimi = rdr.IsDBNull(rdr.GetOrdinal("etunimi")) ? string.Empty : rdr.GetString("etunimi");
-					var sukunimi = rdr.IsDBNull(rdr.GetOrdinal("sukunimi")) ? string.Empty : rdr.GetString("sukunimi");
-
 					var item = new VarausItem
 					{
-						VarausId = rdr.IsDBNull(rdr.GetOrdinal("varaus_id")) ? null : rdr.GetInt32("varaus_id"),
-						AsiakasId = rdr.IsDBNull(rdr.GetOrdinal("asiakas_id")) ? null : rdr.GetInt32("asiakas_id"),
-						AsiakasNimi = $"{etunimi} {sukunimi}".Trim(),
-						MokkiId = rdr.IsDBNull(rdr.GetOrdinal("mokki_id")) ? null : rdr.GetInt32("mokki_id"),
-						MokkiNimi = rdr.IsDBNull(rdr.GetOrdinal("mokkinimi")) ? string.Empty : rdr.GetString("mokkinimi"),
-						VarattuPvm = rdr.IsDBNull(rdr.GetOrdinal("varattu_pvm")) ? string.Empty : rdr.GetDateTime("varattu_pvm").ToString("dd.MM.yyyy"),
-						VahvistusPvm = rdr.IsDBNull(rdr.GetOrdinal("vahvistus_pvm")) ? string.Empty : rdr.GetDateTime("vahvistus_pvm").ToString("dd.MM.yyyy"),
-						VarattuAlkuPvm = rdr.IsDBNull(rdr.GetOrdinal("varattu_alkupvm")) ? string.Empty : rdr.GetDateTime("varattu_alkupvm").ToString("dd.MM.yyyy"),
-						VarattuLoppuPvm = rdr.IsDBNull(rdr.GetOrdinal("varattu_loppupvm")) ? string.Empty : rdr.GetDateTime("varattu_loppupvm").ToString("dd.MM.yyyy")
+						VarausId = dto.VarausId,
+						AsiakasId = dto.AsiakasId,
+						AsiakasNimi = $"{dto.Etunimi} {dto.Sukunimi}".Trim(),
+						MokkiId = dto.MokkiId,
+						MokkiNimi = dto.MokkiNimi ?? string.Empty,
+						VarattuPvm = dto.VarattuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
+						VahvistusPvm = dto.VahvistusPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
+						VarattuAlkuPvm = dto.VarattuAlkuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
+						VarattuLoppuPvm = dto.VarattuLoppuPvm?.ToString("dd.MM.yyyy") ?? string.Empty
 					};
 
 					Varaukset.Add(item);
