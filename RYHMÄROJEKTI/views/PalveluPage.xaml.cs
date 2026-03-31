@@ -4,20 +4,18 @@ namespace RYHMÄROJEKTI.views
     using System.Collections.ObjectModel;
     using System.ComponentModel;
     using System.Globalization;
+    using System.Net.Http.Json;
     using System.Runtime.CompilerServices;
     using System.Windows.Input;
     using Microsoft.Maui.Controls;
-    using MySqlConnector;
     using System.Threading.Tasks;
 
     public partial class PalveluPage : ContentPage
     {
-        private const string ConnectionString = "Server=127.0.0.1;Port=3306;Database=vn;User=root;Password=YES123;SslMode=None;";
-
         public PalveluPage()
         {
             InitializeComponent();
-            BindingContext = new PalveluPageViewModel(ConnectionString);
+            BindingContext = new PalveluPageViewModel();
         }
 
         protected override async void OnAppearing()
@@ -47,8 +45,6 @@ namespace RYHMÄROJEKTI.views
         // ── ViewModel ───────────────────────────────────────────────────────
         class PalveluPageViewModel : INotifyPropertyChanged
         {
-            private readonly string _connString;
-
             public ObservableCollection<PalveluItem> Palvelut { get; } = new();
 
             private PalveluItem _valittuPalvelu;
@@ -61,10 +57,8 @@ namespace RYHMÄROJEKTI.views
             public ICommand PoistaPalveluCommand { get; }
             public ICommand LisaaPalveluCommand { get; }
 
-            public PalveluPageViewModel(string connectionString)
+            public PalveluPageViewModel()
             {
-                _connString = connectionString;
-
                 LisaaPalveluCommand = new Command(async () =>
                 {
                     await Shell.Current.GoToAsync("PalveluPageEdit");
@@ -86,12 +80,8 @@ namespace RYHMÄROJEKTI.views
                     {
                         if (ValittuPalvelu.Id.HasValue)
                         {
-                            await using var conn = new MySqlConnection(_connString);
-                            await conn.OpenAsync();
-                            const string sql = "DELETE FROM palvelu WHERE palvelu_id = @id";
-                            await using var cmd = new MySqlCommand(sql, conn);
-                            cmd.Parameters.AddWithValue("@id", ValittuPalvelu.Id.Value);
-                            await cmd.ExecuteNonQueryAsync();
+                            var resp = await ApiClient.Http.DeleteAsync($"/api/palvelu/{ValittuPalvelu.Id.Value}");
+                            resp.EnsureSuccessStatusCode();
                         }
                     }
                     catch (Exception ex)
@@ -111,28 +101,18 @@ namespace RYHMÄROJEKTI.views
                 {
                     Palvelut.Clear();
 
-                    await using var conn = new MySqlConnection(_connString);
-                    await conn.OpenAsync();
+                    var list = await ApiClient.Http.GetFromJsonAsync<List<PalveluDto>>("/api/palvelu");
+                    if (list == null) return;
 
-                    const string sql = @"
-                        SELECT palvelu_id, nimi, kuvaus
-                        FROM palvelu
-                        ORDER BY nimi";
-
-                    await using var cmd = new MySqlCommand(sql, conn);
-                    await using var rdr = await cmd.ExecuteReaderAsync();
-
-                    while (await rdr.ReadAsync())
+                    foreach (var p in list)
                     {
-                        var item = new PalveluItem
+                        Palvelut.Add(new PalveluItem
                         {
-                            Id = rdr.IsDBNull(rdr.GetOrdinal("palvelu_id")) ? null : rdr.GetInt32("palvelu_id"),
-                            Nimi = rdr.IsDBNull(rdr.GetOrdinal("nimi")) ? string.Empty : rdr.GetString("nimi"),
-                            Sijainti = string.Empty,
-                            Kuvaus = rdr.IsDBNull(rdr.GetOrdinal("kuvaus")) ? string.Empty : rdr.GetString("kuvaus")
-                        };
-
-                        Palvelut.Add(item);
+                            Id = p.Id,
+                            Nimi = p.Nimi ?? string.Empty,
+                            Sijainti = p.AlueNimi ?? string.Empty,
+                            Kuvaus = p.Kuvaus ?? string.Empty
+                        });
                     }
                 }
                 catch (Exception ex)

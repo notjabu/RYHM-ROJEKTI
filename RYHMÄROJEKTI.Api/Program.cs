@@ -532,6 +532,103 @@ app.MapDelete("/api/lasku/{id:int}", async (int id) =>
     return rows > 0 ? Results.Ok() : Results.NotFound();
 });
 
+// ─── Palvelu ────────────────────────────────────────────────────────────────
+
+app.MapGet("/api/palvelu", async () =>
+{
+    await using var conn = await OpenDbAsync();
+    const string sql = """
+        SELECT p.palvelu_id, p.alue_id, p.nimi, p.kuvaus, p.hinta, p.alv,
+               a.nimi AS aluenimi
+        FROM vn.palvelu p
+        LEFT JOIN vn.alue a ON a.alue_id = p.alue_id
+        ORDER BY p.nimi
+        """;
+    await using var cmd = new SqlCommand(sql, conn);
+    await using var rdr = await cmd.ExecuteReaderAsync();
+
+    var list = new List<PalveluDto>();
+    while (await rdr.ReadAsync())
+    {
+        list.Add(new PalveluDto(
+            NullInt(rdr, "palvelu_id"),
+            NullInt(rdr, "alue_id"),
+            Str(rdr, "nimi"),
+            Str(rdr, "kuvaus"),
+            Dbl(rdr, "hinta"),
+            Dbl(rdr, "alv"),
+            Str(rdr, "aluenimi")));
+    }
+    return Results.Ok(list);
+});
+
+app.MapGet("/api/palvelu/{id:int}", async (int id) =>
+{
+    await using var conn = await OpenDbAsync();
+    const string sql = "SELECT alue_id, nimi, kuvaus, hinta, alv FROM vn.palvelu WHERE palvelu_id = @id";
+    await using var cmd = new SqlCommand(sql, conn);
+    cmd.Parameters.AddWithValue("@id", id);
+    await using var rdr = await cmd.ExecuteReaderAsync();
+
+    if (!await rdr.ReadAsync()) return Results.NotFound();
+
+    return Results.Ok(new PalveluDto(
+        id,
+        NullInt(rdr, "alue_id"),
+        Str(rdr, "nimi"),
+        Str(rdr, "kuvaus"),
+        Dbl(rdr, "hinta"),
+        Dbl(rdr, "alv"),
+        ""));
+});
+
+app.MapPost("/api/palvelu", async (PalveluSaveDto dto) =>
+{
+    await using var conn = await OpenDbAsync();
+    const string sql = """
+        INSERT INTO vn.palvelu (alue_id, nimi, kuvaus, hinta, alv)
+        VALUES (@alueId, @nimi, @kuvaus, @hinta, @alv)
+        """;
+    await using var cmd = new SqlCommand(sql, conn);
+    cmd.Parameters.AddWithValue("@alueId", (object?)dto.AlueId ?? DBNull.Value);
+    cmd.Parameters.AddWithValue("@nimi", dto.Nimi);
+    cmd.Parameters.AddWithValue("@kuvaus", dto.Kuvaus);
+    cmd.Parameters.AddWithValue("@hinta", dto.Hinta);
+    cmd.Parameters.AddWithValue("@alv", dto.Alv);
+    await cmd.ExecuteNonQueryAsync();
+    return Results.Created();
+});
+
+app.MapPut("/api/palvelu/{id:int}", async (int id, PalveluSaveDto dto) =>
+{
+    await using var conn = await OpenDbAsync();
+    const string sql = """
+        UPDATE vn.palvelu
+        SET alue_id = @alueId, nimi = @nimi,
+            kuvaus = @kuvaus, hinta = @hinta, alv = @alv
+        WHERE palvelu_id = @id
+        """;
+    await using var cmd = new SqlCommand(sql, conn);
+    cmd.Parameters.AddWithValue("@alueId", (object?)dto.AlueId ?? DBNull.Value);
+    cmd.Parameters.AddWithValue("@nimi", dto.Nimi);
+    cmd.Parameters.AddWithValue("@kuvaus", dto.Kuvaus);
+    cmd.Parameters.AddWithValue("@hinta", dto.Hinta);
+    cmd.Parameters.AddWithValue("@alv", dto.Alv);
+    cmd.Parameters.AddWithValue("@id", id);
+    var rows = await cmd.ExecuteNonQueryAsync();
+    return rows > 0 ? Results.Ok() : Results.NotFound();
+});
+
+app.MapDelete("/api/palvelu/{id:int}", async (int id) =>
+{
+    await using var conn = await OpenDbAsync();
+    const string sql = "DELETE FROM vn.palvelu WHERE palvelu_id = @id";
+    await using var cmd = new SqlCommand(sql, conn);
+    cmd.Parameters.AddWithValue("@id", id);
+    var rows = await cmd.ExecuteNonQueryAsync();
+    return rows > 0 ? Results.Ok() : Results.NotFound();
+});
+
 // ─── Tilasto ────────────────────────────────────────────────────────────────
 
 app.MapGet("/api/tilasto", async () =>
@@ -584,5 +681,9 @@ record LaskuDto(int? Id, int? VarausId, double Summa, double Alv, double Maksett
     string AsiakasNimi, string MokkiNimi,
     DateTime? VarattuPvm, DateTime? VarattuAlkuPvm, DateTime? VarattuLoppuPvm);
 record LaskuSaveDto(int VarausId, double Summa, double Alv, double Maksettu);
+
+record PalveluDto(int? Id, int? AlueId, string Nimi, string Kuvaus,
+    double Hinta, double Alv, string AlueNimi);
+record PalveluSaveDto(int? AlueId, string Nimi, string Kuvaus, double Hinta, double Alv);
 
 record TilastoDto(string Alue, int Maara, int Maara2);

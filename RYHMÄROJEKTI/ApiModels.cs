@@ -104,3 +104,23 @@ public class LaskuSaveDto
     public double Alv { get; set; }
     public double Maksettu { get; set; }
 }
+
+public class PalveluDto
+{
+    public int? Id { get; set; }
+    public int? AlueId { get; set; }
+    public string Nimi { get; set; } = "";
+    public string Kuvaus { get; set; } = "";
+    public double Hinta { get; set; }
+    public double Alv { get; set; }
+    public string AlueNimi { get; set; } = "";
+}
+
+public class PalveluSaveDto
+{
+    public int? AlueId { get; set; }
+    public string Nimi { get; set; } = "";
+    public string Kuvaus { get; set; } = "";
+    public double Hinta { get; set; }
+    public double Alv { get; set; }
+}
