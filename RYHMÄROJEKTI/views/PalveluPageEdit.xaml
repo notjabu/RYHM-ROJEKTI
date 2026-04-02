@@ -6,8 +6,6 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="15" Spacing="12">
-            <Button Text="Palaa"
-                    Pressed="PalaaPalveluPageClicked"/>
 
             <Label Text="Lisää uusi Palvelu" FontAttributes="Bold" FontSize="18"/>
 
@@ -26,11 +24,13 @@
             <Label Text="Kuvaus" />
             <Editor x:Name="KuvausEditor" HeightRequest="120" Placeholder="Kirjoita kuvaus..."/>
 
-            <HorizontalStackLayout Spacing="10">
+            <HorizontalStackLayout Spacing="10" HorizontalOptions="Start">
                 <Button Text="Tallenna"
                         Pressed="OnSaveClicked"
                         BackgroundColor="#512BD4"
                         TextColor="White"/>
+                <Button Text="Peruuta"
+                        Pressed="PalaaPalveluPageClicked"/>
             </HorizontalStackLayout>
 
         </VerticalStackLayout>
