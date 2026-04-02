@@ -11,10 +11,40 @@
             <Label Text="Varaus" />
             <Picker x:Name="VarausPicker"
                     Title="Valitse varaus"
-                    HorizontalOptions="FillAndExpand" />
+                    HorizontalOptions="FillAndExpand"
+                    SelectedIndexChanged="OnVarausPicker_Changed" />
+
+            <!-- Cost breakdown -->
+            <Frame x:Name="ErittelyFrame"
+                   IsVisible="False"
+                   Padding="10" CornerRadius="6"
+                   BorderColor="#E0E0E0" BackgroundColor="#F5F5F5">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Hinnan erittely:" FontAttributes="Bold" FontSize="13" TextColor="#555"/>
+                    <Label x:Name="ErittelyLabel" FontSize="12" TextColor="#333"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Adjustment (+/-) -->
+            <Label Text="Lisähinta / alennus (€)" />
+            <HorizontalStackLayout Spacing="8">
+                <Picker x:Name="AdjustPicker"
+                        WidthRequest="60"
+                        SelectedIndexChanged="OnAdjust_Changed">
+                    <Picker.Items>
+                        <x:String>+</x:String>
+                        <x:String>−</x:String>
+                    </Picker.Items>
+                </Picker>
+                <Entry x:Name="AdjustEntry"
+                       Placeholder="0.00"
+                       Keyboard="Numeric"
+                       HorizontalOptions="FillAndExpand"
+                       TextChanged="OnAdjust_Changed" />
+            </HorizontalStackLayout>
 
             <Label Text="Summa (€)" />
-            <Entry x:Name="SummaEntry" Placeholder="0.00" Keyboard="Numeric"/>
+            <Entry x:Name="SummaEntry" Placeholder="0.00" Keyboard="Numeric" IsReadOnly="True"/>
 
             <Label Text="ALV (%)" />
             <Entry x:Name="AlvEntry" Placeholder="24" Keyboard="Numeric"/>

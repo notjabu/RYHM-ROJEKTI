@@ -399,6 +399,7 @@ app.MapGet("/api/varaus/mokki/{mokkiId:int}", async (int mokkiId) =>
         SELECT varaus_id, varattu_alkupvm, varattu_loppupvm
         FROM vn.varaus
         WHERE mokki_id = @mokkiId
+          AND varattu_loppupvm >= CAST(GETDATE() AS date)
         ORDER BY varattu_alkupvm
         """;
     await using var cmd = new SqlCommand(sql, conn);
