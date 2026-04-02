@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace RYHMÄROJEKTI.views;
 
@@ -148,9 +149,32 @@ public AluePage()
                         Nimi = dto.Nimi ?? string.Empty,
                         Sijainti = dto.Sijainti ?? string.Empty,
                         Kuvaus = dto.Kuvaus ?? string.Empty,
-                        Postinumero = dto.Postinumero ?? string.Empty
+                        Postinumero = dto.Postinumero ?? string.Empty,
+                        MokkiCount = 0
                     });
                 }
+
+                // Load mokit and compute counts per area (if API provides mokki list)
+                try
+                {
+                    var mokkilista = await ApiClient.Http.GetFromJsonAsync<List<MokkiDto>>("/api/mokki");
+                    if (mokkilista != null)
+                    {
+                        var counts = mokkilista
+                            .Where(m => m.AlueId.HasValue)
+                            .GroupBy(m => m.AlueId.Value)
+                            .ToDictionary(g => g.Key, g => g.Count());
+
+                        foreach (var a in Alueet)
+                        {
+                            if (a.Id.HasValue && counts.TryGetValue(a.Id.Value, out var c))
+                                a.MokkiCount = c;
+                            else
+                                a.MokkiCount = 0;
+                        }
+                    }
+                }
+                catch (Exception) { /* ignore mokki load errors */ }
             }
             catch (Exception ex)
             {
@@ -173,5 +197,6 @@ public AluePage()
         public string Postinumero { get; set; }     // from posti.postinro (joined)
         public string Kuvaus { get; set; }
         public string Kuva { get; set; }            // optional image path/url used in list thumbnail
+        public int MokkiCount { get; set; }
     }
 }

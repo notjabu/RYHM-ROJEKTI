@@ -98,6 +98,9 @@
                 <Label Text="Postinumero:" FontAttributes="Bold"/>
                 <Entry Text="{Binding ValittuAlue.Postinumero}" IsReadOnly="True"/>
 
+                <Label Text="Mökkien määrä:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuAlue.MokkiCount}" IsReadOnly="True"/>
+
                 <Label Text="Kuvaus:" FontAttributes="Bold"/>
                 <Editor Text="{Binding ValittuAlue.Kuvaus}" 
                         HeightRequest="100"
