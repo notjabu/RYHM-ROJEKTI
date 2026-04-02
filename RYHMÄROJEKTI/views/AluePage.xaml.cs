@@ -32,6 +32,36 @@ public AluePage()
         await Shell.Current.GoToAsync("AluePageEdit");
     }
 
+    void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (BindingContext is AlueViewModel vm)
+        {
+            var text = e.NewTextValue?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(text))
+            {
+                // reload original data
+                _ = vm.LataaAlueetAsync();
+                return;
+            }
+
+            // simple client-side filtering
+            var filtered = new System.Collections.Generic.List<AlueItem>();
+            foreach (var a in vm.Alueet)
+            {
+                if ((a.Nimi ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                    (a.Sijainti ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                    (a.Postinumero ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                    (a.Kuvaus ?? "").Contains(text, StringComparison.OrdinalIgnoreCase))
+                {
+                    filtered.Add(a);
+                }
+            }
+
+            vm.Alueet.Clear();
+            foreach (var it in filtered) vm.Alueet.Add(it);
+        }
+    }
+
     async void Muokkaa_Clicked(object sender, EventArgs e)
     {
         if (BindingContext is not AlueViewModel vm || vm.ValittuAlue == null)

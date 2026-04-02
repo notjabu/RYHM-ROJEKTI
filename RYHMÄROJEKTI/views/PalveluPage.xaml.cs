@@ -18,6 +18,33 @@ namespace RYHMÄROJEKTI.views
             BindingContext = new PalveluPageViewModel();
         }
 
+        void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (BindingContext is PalveluPageViewModel vm)
+            {
+                var text = e.NewTextValue?.Trim() ?? string.Empty;
+                if (string.IsNullOrEmpty(text))
+                {
+                    _ = vm.LataaPalvelutAsync();
+                    return;
+                }
+
+                var filtered = new System.Collections.Generic.List<PalveluItem>();
+                foreach (var p in vm.Palvelut)
+                {
+                    if ((p.Nimi ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                        (p.Sijainti ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                        (p.Kuvaus ?? "").Contains(text, StringComparison.OrdinalIgnoreCase))
+                    {
+                        filtered.Add(p);
+                    }
+                }
+
+                vm.Palvelut.Clear();
+                foreach (var it in filtered) vm.Palvelut.Add(it);
+            }
+        }
+
         protected override async void OnAppearing()
         {
             base.OnAppearing();
