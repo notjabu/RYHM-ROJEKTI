@@ -47,11 +47,16 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
-                            <Grid Padding="10">
-                                <!-- Only show name (removed thumbnail) -->
+                            <Grid Padding="10" ColumnDefinitions="*, Auto">
                                 <Label Text="{Binding Nimi}" 
                                        FontAttributes="Bold"
                                        VerticalOptions="Center"/>
+                                <Label Text="{Binding HintaFormatted}" 
+                                       Grid.Column="1"
+                                       VerticalOptions="Center"
+                                       HorizontalOptions="End"
+                                       FontAttributes="Italic"
+                                       FontSize="12"/>
                             </Grid>
                         </ViewCell>
                     </DataTemplate>
@@ -82,6 +87,12 @@
                 <Editor Text="{Binding ValittuPalvelu.Kuvaus}" 
                         HeightRequest="100"
                         IsReadOnly="True"/>
+
+                <Label Text="Hinta:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuPalvelu.HintaFormatted}" IsReadOnly="True"/>
+
+                <Label Text="ALV:" FontAttributes="Bold"/>
+                <Entry Text="{Binding ValittuPalvelu.AlvFormatted}" IsReadOnly="True"/>
 
             </VerticalStackLayout>
         </ScrollView>

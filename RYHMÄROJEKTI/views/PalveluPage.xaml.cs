@@ -78,8 +78,10 @@ namespace RYHMÄROJEKTI.views
             public PalveluItem ValittuPalvelu
             {
                 get => _valittuPalvelu;
-                set { _valittuPalvelu = value; OnPropertyChanged(); }
+                set { _valittuPalvelu = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasValittuPalvelu)); }
             }
+
+            public bool HasValittuPalvelu => ValittuPalvelu != null;
 
             public ICommand PoistaPalveluCommand { get; }
             public ICommand LisaaPalveluCommand { get; }
@@ -138,7 +140,9 @@ namespace RYHMÄROJEKTI.views
                             Id = p.Id,
                             Nimi = p.Nimi ?? string.Empty,
                             Sijainti = p.AlueNimi ?? string.Empty,
-                            Kuvaus = p.Kuvaus ?? string.Empty
+                            Kuvaus = p.Kuvaus ?? string.Empty,
+                            Hinta = p.Hinta,
+                            Alv = p.Alv
                         });
                     }
                 }
@@ -161,6 +165,12 @@ namespace RYHMÄROJEKTI.views
             public string Nimi { get; set; } = string.Empty;
             public string Sijainti { get; set; } = string.Empty;
             public string Kuvaus { get; set; } = string.Empty;
+
+            public double Hinta { get; set; }
+            public double Alv { get; set; }
+
+            public string HintaFormatted => Hinta.ToString("0.##", CultureInfo.CurrentCulture);
+            public string AlvFormatted => $"{Alv.ToString("0.##", CultureInfo.CurrentCulture)}%";
         }
     }
 
