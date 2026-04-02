@@ -17,17 +17,18 @@
             <SearchBar Placeholder="Hae palveluita"
                        Margin="0,0,0,10"/>
 
-            <Button Text="Lisää uusi" 
+            <Button Text="Lisää palvelu" 
                     Command="{Binding LisaaPalveluCommand}"
                     BackgroundColor="#512BD4"
                     TextColor="White"/>
 
-            <Button Text="Muokkaa" 
+            <Button Text="Muokkaa valittua" 
+                    BackgroundColor="#f0f0f0"
                     Pressed="MuokkaaPalveluClicked"/>
 
-            <Button Text="Poista" 
+            <Button Text="Poista valittu" 
                     Command="{Binding PoistaPalveluCommand}"
-                    BackgroundColor="#E74C3C"
+                    BackgroundColor="Red"
                     TextColor="White"/>
         </VerticalStackLayout>
 

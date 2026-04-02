@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RYHMÄROJEKTI.views.VarausPageEdit"
+             Title="Lisää varaus">
+    <ScrollView>
+        <VerticalStackLayout Padding="15" Spacing="12">
+
+            <Label Text="{Binding Title, Source={RelativeSource AncestorType={x:Type ContentPage}}}" FontAttributes="Bold" FontSize="18"/>
+
+            <!-- Asiakas -->
+            <Label Text="Asiakas" />
+            <HorizontalStackLayout Spacing="8">
+                <Picker x:Name="AsiakasPicker"
+                        Title="Valitse asiakas"
+                        HorizontalOptions="FillAndExpand"
+                        SelectedIndexChanged="OnAsiakasPicker_Changed" />
+                <Button Text="+ Uusi asiakas"
+                        Clicked="OnLisaaAsiakas_Clicked"
+                        BackgroundColor="#27AE60"
+                        TextColor="White"
+                        FontSize="12"
+                        VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <!-- Mökki -->
+            <Label Text="Mökki" />
+            <Picker x:Name="MokkiPicker"
+                    Title="Valitse mökki"
+                    HorizontalOptions="FillAndExpand"
+                    SelectedIndexChanged="OnMokkiPicker_Changed" />
+
+            <!-- Lisäpalvelut -->
+            <Label Text="Lisäpalvelut" FontAttributes="Bold" />
+            <ListView x:Name="PalvelutListView"
+                      HasUnevenRows="True"
+                      HeightRequest="180">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Grid ColumnDefinitions="Auto, *, Auto" Padding="4" ColumnSpacing="8">
+                                <CheckBox Grid.Column="0"
+                                          IsChecked="{Binding IsSelected}"
+                                          VerticalOptions="Center"/>
+                                <Label Grid.Column="1"
+                                       Text="{Binding DisplayText}"
+                                       VerticalOptions="Center"/>
+                                <Entry Grid.Column="2"
+                                       Text="{Binding Lkm}"
+                                       WidthRequest="60"
+                                       Keyboard="Numeric"
+                                       Placeholder="kpl"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <!-- Alkupvm -->
+            <Label Text="Alkupäivämäärä" />
+            <DatePicker x:Name="AlkuPvmPicker"
+                        Format="dd.MM.yyyy"
+                        DateSelected="OnAlkuPvm_Changed" />
+
+            <!-- Loppupvm -->
+            <Label Text="Loppupäivämäärä" />
+            <DatePicker x:Name="LoppuPvmPicker"
+                        Format="dd.MM.yyyy" />
+
+            <!-- Vahvistus -->
+            <HorizontalStackLayout Spacing="8">
+                <CheckBox x:Name="VahvistaCheckBox" VerticalOptions="Center"/>
+                <Label Text="Vahvista varaus heti" VerticalOptions="Center"/>
+            </HorizontalStackLayout>
+
+            <!-- Buttons -->
+            <HorizontalStackLayout Spacing="10">
+                <Button Text="Tallenna" Clicked="OnSaveClicked" BackgroundColor="#512BD4" TextColor="White"/>
+                <Button Text="Peruuta" Clicked="OnCancelClicked" />
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

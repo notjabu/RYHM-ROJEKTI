@@ -22,14 +22,14 @@
                     BackgroundColor="#512BD4"
                     TextColor="White"/>
 
-            <Button Text="Muokkaa"
+            <Button Text="Muokkaa valittua"
                     Clicked="Muokkaa_Clicked"
                     BackgroundColor="#f0f0f0"
                     TextColor="Black"/>
 
-            <Button Text="Poista"
+            <Button Text="Poista valittu"
                     Command="{Binding PoistaLaskuCommand}"
-                    BackgroundColor="#E74C3C"
+                    BackgroundColor="Red"
                     TextColor="White"/>
         </VerticalStackLayout>
 

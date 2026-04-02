@@ -20,12 +20,12 @@
                 BackgroundColor="#512BD4"
                 TextColor="White"/>
 
-            <Button Text="Muokkaa" 
+            <Button Text="Muokkaa valittua" 
                 Clicked="Muokkaa_Clicked"
                 BackgroundColor="#f0f0f0"
                 TextColor="Black"/>
 
-            <Button Text="Poista"
+            <Button Text="Poista valittu"
                     BackgroundColor="Red"
                     TextColor="White"
                 Command="{Binding PoistaMokkiCommand}"/>

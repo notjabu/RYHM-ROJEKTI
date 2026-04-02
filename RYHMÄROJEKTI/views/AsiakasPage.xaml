@@ -20,18 +20,18 @@
             <SearchBar Placeholder="Hae asiakkaita"
                        Margin="0,0,0,10"/>
 
-            <Button Text="Lisää asiakas"
-                    Clicked="LisaaAsiakas_Clicked"
+            <Button Text="Lisää varaus"
+                    Clicked="LisaaVaraus_Clicked"
                     BackgroundColor="#512BD4"
                     TextColor="White"/>
 
-            <Button Text="Muokkaa"
+            <Button Text="Muokkaa valittua"
                     Clicked="Muokkaa_Clicked"
                     BackgroundColor="#f0f0f0"
                     TextColor="Black"/>
 
-            <Button Text="Poista"
-                    Command="{Binding PoistaAsiakasCommand}"
+            <Button Text="Poista valittu"
+                    Command="{Binding PoistaCommand}"
                     BackgroundColor="Red"
                     TextColor="White"/>
         </VerticalStackLayout>
@@ -120,6 +120,8 @@
                    Margin="0,10,0,5"/>
             <ListView Grid.Row="1"
                       ItemsSource="{Binding Varaukset}"
+                      SelectedItem="{Binding ValittuVaraus}"
+                      SelectionMode="Single"
                       HasUnevenRows="True">
                 <ListView.ItemTemplate>
                     <DataTemplate>

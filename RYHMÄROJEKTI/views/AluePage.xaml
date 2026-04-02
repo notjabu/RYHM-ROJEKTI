@@ -23,12 +23,12 @@
                     TextColor="White"/>
 
             <!-- Muokkaa button: temporary debug version without Command -->
-            <Button Text="Muokkaa"
+            <Button Text="Muokkaa valittua"
                     Clicked="Muokkaa_Clicked"
                     BackgroundColor="#f0f0f0"
                     TextColor="Black"/>
 
-            <Button Text="Poista" 
+            <Button Text="Poista valittu" 
                     Command="{Binding PoistaAlueCommand}"
                     BackgroundColor="Red"
                     TextColor="White"/>

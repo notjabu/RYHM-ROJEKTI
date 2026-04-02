@@ -27,35 +27,45 @@ public AsiakasPage()
 		}
 	}
 
-	async void LisaaAsiakas_Clicked(object sender, EventArgs e)
+	async void LisaaVaraus_Clicked(object sender, EventArgs e)
 	{
-		await Shell.Current.GoToAsync("AsiakasPageEdit");
+		await Shell.Current.GoToAsync("VarausPageEdit");
 	}
 
 	async void Muokkaa_Clicked(object sender, EventArgs e)
 	{
-		if (BindingContext is not AsiakasPageViewModel vm || vm.ValittuAsiakas == null)
-		{
-			await DisplayAlert("Huom", "Valitse muokattava asiakas ensin.", "OK");
+		if (BindingContext is not AsiakasPageViewModel vm)
 			return;
-		}
 
-		var asiakas = vm.ValittuAsiakas;
-		if (asiakas.Id.HasValue)
+		if (vm.LastSelection == SelectionType.Varaus && vm.ValittuVaraus != null)
 		{
-			await Shell.Current.GoToAsync($"AsiakasPageEdit?asiakasId={asiakas.Id.Value}");
+			var varaus = vm.ValittuVaraus;
+			if (varaus.VarausId.HasValue)
+				await Shell.Current.GoToAsync($"VarausPageEdit?varausId={varaus.VarausId.Value}");
+		}
+		else if (vm.LastSelection == SelectionType.Asiakas && vm.ValittuAsiakas != null)
+		{
+			var asiakas = vm.ValittuAsiakas;
+			if (asiakas.Id.HasValue)
+				await Shell.Current.GoToAsync($"AsiakasPageEdit?asiakasId={asiakas.Id.Value}");
+			else
+				await Shell.Current.GoToAsync("AsiakasPageEdit");
 		}
 		else
 		{
-			await Shell.Current.GoToAsync("AsiakasPageEdit");
+			await DisplayAlert("Huom", "Valitse muokattava asiakas tai varaus ensin.", "OK");
 		}
 	}
 
 	// ── ViewModel ───────────────────────────────────────────────────────
+	enum SelectionType { None, Asiakas, Varaus }
+
 	class AsiakasPageViewModel : INotifyPropertyChanged
 	{
 		public ObservableCollection<AsiakasItem> Asiakkaat { get; } = new();
 		public ObservableCollection<VarausItem> Varaukset { get; } = new();
+
+		public SelectionType LastSelection { get; private set; } = SelectionType.None;
 
 		private AsiakasItem _valittuAsiakas;
 		public AsiakasItem ValittuAsiakas
@@ -64,43 +74,91 @@ public AsiakasPage()
 			set
 			{
 				_valittuAsiakas = value;
+				if (value != null)
+					LastSelection = SelectionType.Asiakas;
 				OnPropertyChanged();
 				PaivitaVarausHighlights();
 			}
 		}
 
-		public ICommand PoistaAsiakasCommand { get; }
+		private VarausItem _valittuVaraus;
+		public VarausItem ValittuVaraus
+		{
+			get => _valittuVaraus;
+			set
+			{
+				if (_valittuVaraus != null)
+					_valittuVaraus.IsSelected = false;
+				_valittuVaraus = value;
+				if (_valittuVaraus != null)
+				{
+					_valittuVaraus.IsSelected = true;
+					LastSelection = SelectionType.Varaus;
+				}
+				OnPropertyChanged();
+			}
+		}
+
+		public ICommand PoistaCommand { get; }
 
 		public AsiakasPageViewModel()
 		{
-			PoistaAsiakasCommand = new Command(async () =>
+			PoistaCommand = new Command(async () =>
 			{
-				if (ValittuAsiakas == null)
+				if (LastSelection == SelectionType.Varaus && ValittuVaraus != null)
 				{
-					await Application.Current.MainPage.DisplayAlert("Huom", "Valitse ensin asiakas.", "OK");
-					return;
-				}
+					var varaus = ValittuVaraus;
+					bool ok = await Application.Current.MainPage.DisplayAlert(
+						"Vahvista", $"Poistetaanko varaus ({varaus.AsiakasNimi}, {varaus.MokkiNimi})?", "Kyllä", "Ei");
+					if (!ok) return;
 
-				bool ok = await Application.Current.MainPage.DisplayAlert(
-					"Vahvista", $"Poistetaanko asiakas \"{ValittuAsiakas.KokoNimi}\"?", "Kyllä", "Ei");
-				if (!ok) return;
-
-				try
-				{
-					if (ValittuAsiakas.Id.HasValue)
+					try
 					{
-						var resp = await ApiClient.Http.DeleteAsync($"/api/asiakas/{ValittuAsiakas.Id.Value}");
-						resp.EnsureSuccessStatusCode();
+						if (varaus.VarausId.HasValue)
+						{
+							var resp = await ApiClient.Http.DeleteAsync($"/api/varaus/{varaus.VarausId.Value}");
+							resp.EnsureSuccessStatusCode();
+						}
 					}
-				}
-				catch (Exception ex)
-				{
-					await Application.Current.MainPage.DisplayAlert(
-						"Virhe", "Poisto epäonnistui: " + ex.Message, "OK");
-				}
+					catch (Exception ex)
+					{
+						await Application.Current.MainPage.DisplayAlert(
+							"Virhe", "Varauksen poisto epäonnistui: " + ex.Message, "OK");
+						return;
+					}
 
-				Asiakkaat.Remove(ValittuAsiakas);
-				ValittuAsiakas = null;
+					Varaukset.Remove(varaus);
+					ValittuVaraus = null;
+				}
+				else if (LastSelection == SelectionType.Asiakas && ValittuAsiakas != null)
+				{
+					var asiakas = ValittuAsiakas;
+					bool ok = await Application.Current.MainPage.DisplayAlert(
+						"Vahvista", $"Poistetaanko asiakas \"{asiakas.KokoNimi}\"?", "Kyllä", "Ei");
+					if (!ok) return;
+
+					try
+					{
+						if (asiakas.Id.HasValue)
+						{
+							var resp = await ApiClient.Http.DeleteAsync($"/api/asiakas/{asiakas.Id.Value}");
+							resp.EnsureSuccessStatusCode();
+						}
+					}
+					catch (Exception ex)
+					{
+						await Application.Current.MainPage.DisplayAlert(
+							"Virhe", "Poisto epäonnistui: " + ex.Message, "OK");
+						return;
+					}
+
+					Asiakkaat.Remove(asiakas);
+					ValittuAsiakas = null;
+				}
+				else
+				{
+					await Application.Current.MainPage.DisplayAlert("Huom", "Valitse ensin asiakas tai varaus.", "OK");
+				}
 			});
 		}
 
@@ -225,7 +283,20 @@ public AsiakasPage()
 			}
 		}
 
-		public Color HighlightColor => IsHighlighted ? Color.FromArgb("#D6BCFA") : Colors.White;
+		private bool _isSelected;
+		public bool IsSelected
+		{
+			get => _isSelected;
+			set
+			{
+				if (_isSelected == value) return;
+				_isSelected = value;
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HighlightColor)));
+			}
+		}
+
+		public Color HighlightColor => IsSelected ? Color.FromArgb("#D0D0D0") : IsHighlighted ? Color.FromArgb("#D6BCFA") : Colors.White;
 
 		public event PropertyChangedEventHandler PropertyChanged;
 	}

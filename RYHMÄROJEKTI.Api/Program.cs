@@ -407,7 +407,7 @@ app.MapGet("/api/varaus", async () =>
         ORDER BY v.varattu_alkupvm DESC
         """;
     await using var cmd = new SqlCommand(sql, conn);
-    await using var rdr = await cmd.ExecuteReaderAsync();
+    await using var rdr = await cmd.ExecuteReaderAsync();  // First reader opened
 
     var list = new List<VarausDto>();
     while (await rdr.ReadAsync())
@@ -422,9 +422,219 @@ app.MapGet("/api/varaus", async () =>
             NullDt(rdr, "varattu_pvm"),
             NullDt(rdr, "vahvistus_pvm"),
             NullDt(rdr, "varattu_alkupvm"),
-            NullDt(rdr, "varattu_loppupvm")));
+            NullDt(rdr, "varattu_loppupvm"),
+            new List<VarausPalveluDto>()));
     }
+
+    rdr.Close();
+
+    var lookup = list.Where(v => v.VarausId.HasValue)
+                        .ToDictionary(v => v.VarausId!.Value);
+
+    if (list.Count > 0)
+    {
+        const string palveluSql = """
+            SELECT vp.varaus_id, vp.palvelu_id, p.nimi, vp.lkm
+            FROM vn.varauksen_palvelut vp
+            INNER JOIN vn.palvelu p ON p.palvelu_id = vp.palvelu_id
+            ORDER BY vp.varaus_id, p.nimi
+            """;
+        await using var cmd2 = new SqlCommand(palveluSql, conn);
+        await using var rdr2 = await cmd2.ExecuteReaderAsync();  // <-- EXCEPTION HERE
+
+        while (await rdr2.ReadAsync())  // <-- BUG: Using rdr instead of rdr2
+        {
+            var vid = Int(rdr2, "varaus_id");
+            if (lookup.TryGetValue(vid, out var varaus))
+            {
+                varaus.Palvelut.Add(new VarausPalveluDto(
+                    Int(rdr2, "palvelu_id"),
+                    Str(rdr2, "nimi"),
+                    Int(rdr2, "lkm")));
+            }
+        }
+    }
+
     return Results.Ok(list);
+});
+
+app.MapPost("/api/varaus", async (VarausSaveDto dto) =>
+{
+    await using var conn = await OpenDbAsync();
+    await using var tx = conn.BeginTransaction();
+    try
+    {
+        const string insertVaraus = """
+            INSERT INTO vn.varaus (asiakas_id, mokki_id, varattu_pvm, vahvistus_pvm, varattu_alkupvm, varattu_loppupvm)
+            OUTPUT INSERTED.varaus_id
+            VALUES (@asiakasId, @mokkiId, @varattuPvm, @vahvistusPvm, @alkupvm, @loppupvm)
+            """;
+        await using var cmd = new SqlCommand(insertVaraus, conn, tx);
+        cmd.Parameters.AddWithValue("@asiakasId", dto.AsiakasId);
+        cmd.Parameters.AddWithValue("@mokkiId", dto.MokkiId);
+        cmd.Parameters.AddWithValue("@varattuPvm", DateTime.Now);
+        cmd.Parameters.AddWithValue("@vahvistusPvm", (object?)dto.VahvistusPvm ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@alkupvm", dto.VarattuAlkuPvm);
+        cmd.Parameters.AddWithValue("@loppupvm", dto.VarattuLoppuPvm);
+        var varausId = (int)await cmd.ExecuteScalarAsync();
+
+        foreach (var p in dto.Palvelut)
+        {
+            const string insertPalvelu = """
+                INSERT INTO vn.varauksen_palvelut (varaus_id, palvelu_id, lkm)
+                VALUES (@varausId, @palveluId, @lkm)
+                """;
+            await using var cmd2 = new SqlCommand(insertPalvelu, conn, tx);
+            cmd2.Parameters.AddWithValue("@varausId", varausId);
+            cmd2.Parameters.AddWithValue("@palveluId", p.PalveluId);
+            cmd2.Parameters.AddWithValue("@lkm", p.Lkm);
+            await cmd2.ExecuteNonQueryAsync();
+        }
+
+        tx.Commit();
+        return Results.Created($"/api/varaus/{varausId}", null);
+    }
+    catch
+    {
+        tx.Rollback();
+        throw;
+    }
+});
+
+app.MapGet("/api/varaus/{id:int}", async (int id) =>
+{
+    await using var conn = await OpenDbAsync();
+    const string sql = """
+        SELECT v.varaus_id, v.asiakas_id, v.mokki_id,
+               v.varattu_pvm, v.vahvistus_pvm,
+               v.varattu_alkupvm, v.varattu_loppupvm,
+               a.etunimi, a.sukunimi,
+               m.mokkinimi
+        FROM vn.varaus v
+        LEFT JOIN vn.asiakas a ON a.asiakas_id = v.asiakas_id
+        LEFT JOIN vn.mokki m ON m.mokki_id = v.mokki_id
+        WHERE v.varaus_id = @id
+        """;
+    await using var cmd = new SqlCommand(sql, conn);
+    cmd.Parameters.AddWithValue("@id", id);
+    await using var rdr = await cmd.ExecuteReaderAsync();
+
+    if (!await rdr.ReadAsync()) return Results.NotFound();
+
+    var dto = new VarausDto(
+        NullInt(rdr, "varaus_id"),
+        NullInt(rdr, "asiakas_id"),
+        NullInt(rdr, "mokki_id"),
+        Str(rdr, "mokkinimi"),
+        Str(rdr, "etunimi"),
+        Str(rdr, "sukunimi"),
+        NullDt(rdr, "varattu_pvm"),
+        NullDt(rdr, "vahvistus_pvm"),
+        NullDt(rdr, "varattu_alkupvm"),
+        NullDt(rdr, "varattu_loppupvm"),
+        new List<VarausPalveluDto>());
+
+    rdr.Close();
+
+    const string palveluSql = """
+        SELECT vp.palvelu_id, p.nimi, vp.lkm
+        FROM vn.varauksen_palvelut vp
+        INNER JOIN vn.palvelu p ON p.palvelu_id = vp.palvelu_id
+        WHERE vp.varaus_id = @vid
+        ORDER BY p.nimi
+        """;
+    await using var cmd2 = new SqlCommand(palveluSql, conn);
+    cmd2.Parameters.AddWithValue("@vid", id);
+    await using var rdr2 = await cmd2.ExecuteReaderAsync();
+
+    while (await rdr2.ReadAsync())
+    {
+        dto.Palvelut.Add(new VarausPalveluDto(
+            Int(rdr2, "palvelu_id"),
+            Str(rdr2, "nimi"),
+            Int(rdr2, "lkm")));
+    }
+
+    return Results.Ok(dto);
+});
+
+app.MapPut("/api/varaus/{id:int}", async (int id, VarausSaveDto dto) =>
+{
+    await using var conn = await OpenDbAsync();
+    await using var tx = conn.BeginTransaction();
+    try
+    {
+        const string updateSql = """
+            UPDATE vn.varaus
+            SET asiakas_id = @asiakasId, mokki_id = @mokkiId,
+                vahvistus_pvm = @vahvistusPvm,
+                varattu_alkupvm = @alkupvm, varattu_loppupvm = @loppupvm
+            WHERE varaus_id = @id
+            """;
+        await using var cmd = new SqlCommand(updateSql, conn, tx);
+        cmd.Parameters.AddWithValue("@asiakasId", dto.AsiakasId);
+        cmd.Parameters.AddWithValue("@mokkiId", dto.MokkiId);
+        cmd.Parameters.AddWithValue("@vahvistusPvm", (object?)dto.VahvistusPvm ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@alkupvm", dto.VarattuAlkuPvm);
+        cmd.Parameters.AddWithValue("@loppupvm", dto.VarattuLoppuPvm);
+        cmd.Parameters.AddWithValue("@id", id);
+        var rows = await cmd.ExecuteNonQueryAsync();
+        if (rows == 0) { tx.Rollback(); return Results.NotFound(); }
+
+        const string deletePalvelut = "DELETE FROM vn.varauksen_palvelut WHERE varaus_id = @vid";
+        await using var cmdDel = new SqlCommand(deletePalvelut, conn, tx);
+        cmdDel.Parameters.AddWithValue("@vid", id);
+        await cmdDel.ExecuteNonQueryAsync();
+
+        foreach (var p in dto.Palvelut)
+        {
+            const string insertPalvelu = """
+                INSERT INTO vn.varauksen_palvelut (varaus_id, palvelu_id, lkm)
+                VALUES (@varausId, @palveluId, @lkm)
+                """;
+            await using var cmd2 = new SqlCommand(insertPalvelu, conn, tx);
+            cmd2.Parameters.AddWithValue("@varausId", id);
+            cmd2.Parameters.AddWithValue("@palveluId", p.PalveluId);
+            cmd2.Parameters.AddWithValue("@lkm", p.Lkm);
+            await cmd2.ExecuteNonQueryAsync();
+        }
+
+        tx.Commit();
+        return Results.Ok();
+    }
+    catch
+    {
+        tx.Rollback();
+        throw;
+    }
+});
+
+app.MapDelete("/api/varaus/{id:int}", async (int id) =>
+{
+    await using var conn = await OpenDbAsync();
+    await using var tx = conn.BeginTransaction();
+    try
+    {
+        const string deletePalvelut = "DELETE FROM vn.varauksen_palvelut WHERE varaus_id = @vid";
+        await using var cmdPal = new SqlCommand(deletePalvelut, conn, tx);
+        cmdPal.Parameters.AddWithValue("@vid", id);
+        await cmdPal.ExecuteNonQueryAsync();
+
+        const string deleteVaraus = "DELETE FROM vn.varaus WHERE varaus_id = @id";
+        await using var cmd = new SqlCommand(deleteVaraus, conn, tx);
+        cmd.Parameters.AddWithValue("@id", id);
+        var rows = await cmd.ExecuteNonQueryAsync();
+
+        if (rows == 0) { tx.Rollback(); return Results.NotFound(); }
+
+        tx.Commit();
+        return Results.Ok();
+    }
+    catch
+    {
+        tx.Rollback();
+        throw;
+    }
 });
 
 // ─── Lasku ──────────────────────────────────────────────────────────────────
@@ -672,10 +882,13 @@ record AsiakasDto(int? Id, string Etunimi, string Sukunimi, string Lahiosoite,
 record AsiakasSaveDto(string Etunimi, string Sukunimi, string Lahiosoite,
     string Postinro, string Email, string Puhelinnro);
 
+record VarausPalveluDto(int PalveluId, string PalveluNimi, int Lkm);
+
 record VarausDto(int? VarausId, int? AsiakasId, int? MokkiId, string MokkiNimi,
     string Etunimi, string Sukunimi,
     DateTime? VarattuPvm, DateTime? VahvistusPvm,
-    DateTime? VarattuAlkuPvm, DateTime? VarattuLoppuPvm);
+    DateTime? VarattuAlkuPvm, DateTime? VarattuLoppuPvm,
+    List<VarausPalveluDto> Palvelut);
 
 record LaskuDto(int? Id, int? VarausId, double Summa, double Alv, double Maksettu,
     string AsiakasNimi, string MokkiNimi,
@@ -685,5 +898,10 @@ record LaskuSaveDto(int VarausId, double Summa, double Alv, double Maksettu);
 record PalveluDto(int? Id, int? AlueId, string Nimi, string Kuvaus,
     double Hinta, double Alv, string AlueNimi);
 record PalveluSaveDto(int? AlueId, string Nimi, string Kuvaus, double Hinta, double Alv);
+
+record VarausSaveDto(int AsiakasId, int MokkiId, DateTime? VahvistusPvm,
+    DateTime VarattuAlkuPvm, DateTime VarattuLoppuPvm,
+    List<VarausPalveluSaveDto> Palvelut);
+record VarausPalveluSaveDto(int PalveluId, int Lkm);
 
 record TilastoDto(string Alue, int Maara, int Maara2);

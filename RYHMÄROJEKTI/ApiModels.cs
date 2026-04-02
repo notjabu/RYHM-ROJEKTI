@@ -81,6 +81,14 @@ public class VarausDto
     public DateTime? VahvistusPvm { get; set; }
     public DateTime? VarattuAlkuPvm { get; set; }
     public DateTime? VarattuLoppuPvm { get; set; }
+    public List<VarausPalveluDto> Palvelut { get; set; } = new();
+}
+
+public class VarausPalveluDto
+{
+    public int PalveluId { get; set; }
+    public string PalveluNimi { get; set; } = "";
+    public int Lkm { get; set; }
 }
 
 public class LaskuDto
@@ -123,4 +131,20 @@ public class PalveluSaveDto
     public string Kuvaus { get; set; } = "";
     public double Hinta { get; set; }
     public double Alv { get; set; }
+}
+
+public class VarausSaveDto
+{
+    public int AsiakasId { get; set; }
+    public int MokkiId { get; set; }
+    public DateTime? VahvistusPvm { get; set; }
+    public DateTime VarattuAlkuPvm { get; set; }
+    public DateTime VarattuLoppuPvm { get; set; }
+    public List<VarausPalveluSaveDto> Palvelut { get; set; } = new();
+}
+
+public class VarausPalveluSaveDto
+{
+    public int PalveluId { get; set; }
+    public int Lkm { get; set; }
 }

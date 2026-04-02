@@ -13,6 +13,7 @@ namespace RYHMÄROJEKTI
             Routing.RegisterRoute(nameof(MokkiPageEdit), typeof(MokkiPageEdit));
             Routing.RegisterRoute(nameof(AsiakasPageEdit), typeof(AsiakasPageEdit));
             Routing.RegisterRoute(nameof(LaskuPageEdit), typeof(LaskuPageEdit));
+            Routing.RegisterRoute(nameof(VarausPageEdit), typeof(VarausPageEdit));
         }
     }
 }
