@@ -34,6 +34,33 @@ public LaskuPage()
     // --- (LisaaLasku ja Muokkaa metodit säilyvät ennallaan) ---
     async void LisaaLasku_Clicked(object sender, EventArgs e) => await Shell.Current.GoToAsync("LaskuPageEdit");
 
+    void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (BindingContext is LaskuPageViewModel vm)
+        {
+            var text = e.NewTextValue?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(text))
+            {
+                _ = vm.LataaLaskutAsync();
+                return;
+            }
+
+            var filtered = new System.Collections.Generic.List<LaskuItem>();
+            foreach (var l in vm.Laskut)
+            {
+                if ((l.Otsikko ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                    (l.AsiakasNimi ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                    (l.MokkiNimi ?? "").Contains(text, StringComparison.OrdinalIgnoreCase))
+                {
+                    filtered.Add(l);
+                }
+            }
+
+            vm.Laskut.Clear();
+            foreach (var it in filtered) vm.Laskut.Add(it);
+        }
+    }
+
     async void Muokkaa_Clicked(object sender, EventArgs e)
     {
         if (BindingContext is not LaskuPageViewModel vm || vm.ValittuLasku == null)

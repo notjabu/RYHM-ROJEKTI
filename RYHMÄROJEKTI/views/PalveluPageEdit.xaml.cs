@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using System.Globalization;
 using Microsoft.Maui.Controls;
 
 [QueryProperty(nameof(PalveluId), "palveluId")]
@@ -76,6 +77,10 @@ public partial class PalveluPageEdit : ContentPage
                 NimiEntry.Text = dto.Nimi ?? string.Empty;
                 KuvausEditor.Text = dto.Kuvaus ?? string.Empty;
 
+                // set price and VAT fields (use current culture for decimal separator)
+                HintaEntry.Text = dto.Hinta.ToString("0.##", CultureInfo.CurrentCulture);
+                AlvEntry.Text = dto.Alv.ToString("0.##", CultureInfo.CurrentCulture);
+
                 if (dto.AlueId.HasValue)
                 {
                     var match = _areas.FirstOrDefault(a => a.Id == dto.AlueId.Value);
@@ -113,6 +118,22 @@ public partial class PalveluPageEdit : ContentPage
         int? alueId = selectedArea?.Id;
         var kuvaus = KuvausEditor.Text?.Trim() ?? string.Empty;
 
+        // parse price and VAT using current culture
+        double hinta = 0;
+        double alv = 0;
+        if (!string.IsNullOrWhiteSpace(HintaEntry.Text) &&
+            !double.TryParse(HintaEntry.Text.Trim(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.CurrentCulture, out hinta))
+        {
+            await DisplayAlert("Virhe", "Hinnan muoto ei ole kelvollinen.", "OK");
+            return;
+        }
+        if (!string.IsNullOrWhiteSpace(AlvEntry.Text) &&
+            !double.TryParse(AlvEntry.Text.Trim(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.CurrentCulture, out alv))
+        {
+            await DisplayAlert("Virhe", "ALV:n muoto ei ole kelvollinen.", "OK");
+            return;
+        }
+
         if (string.IsNullOrEmpty(nimi))
         {
             await DisplayAlert("Virhe", "Nimi ei voi olla tyhjä.", "OK");
@@ -124,8 +145,8 @@ public partial class PalveluPageEdit : ContentPage
             AlueId = alueId,
             Nimi = nimi,
             Kuvaus = kuvaus,
-            Hinta = 0,
-            Alv = 0
+            Hinta = hinta,
+            Alv = alv
         };
 
         try

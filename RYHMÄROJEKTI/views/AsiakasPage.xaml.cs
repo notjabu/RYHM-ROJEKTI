@@ -32,6 +32,33 @@ public AsiakasPage()
 		await Shell.Current.GoToAsync("VarausPageEdit");
 	}
 
+	void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (BindingContext is AsiakasPageViewModel vm)
+		{
+			var text = e.NewTextValue?.Trim() ?? string.Empty;
+			if (string.IsNullOrEmpty(text))
+			{
+				_ = vm.LataaAsiakkaatAsync();
+				return;
+			}
+
+			var filtered = new System.Collections.Generic.List<AsiakasItem>();
+			foreach (var a in vm.Asiakkaat)
+			{
+				if ((a.KokoNimi ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+					(a.Email ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+					(a.Postinro ?? "").Contains(text, StringComparison.OrdinalIgnoreCase))
+				{
+					filtered.Add(a);
+				}
+			}
+
+			vm.Asiakkaat.Clear();
+			foreach (var it in filtered) vm.Asiakkaat.Add(it);
+		}
+	}
+
 	async void Muokkaa_Clicked(object sender, EventArgs e)
 	{
 		if (BindingContext is not AsiakasPageViewModel vm)

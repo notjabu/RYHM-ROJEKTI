@@ -31,6 +31,33 @@ public partial class MokkiPage : ContentPage
 		await Shell.Current.GoToAsync("MokkiPageEdit");
 	}
 
+	void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (BindingContext is MokkiPageViewModel vm)
+		{
+			var text = e.NewTextValue?.Trim() ?? string.Empty;
+			if (string.IsNullOrEmpty(text))
+			{
+				_ = vm.LataaMokitAsync();
+				return;
+			}
+
+			var filtered = new System.Collections.Generic.List<MokkiItem>();
+			foreach (var m in vm.Mokit)
+			{
+				if ((m.Mokkinimi ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+					(m.Toimipaikka ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+					(m.Postinro ?? "").Contains(text, StringComparison.OrdinalIgnoreCase))
+				{
+					filtered.Add(m);
+				}
+			}
+
+			vm.Mokit.Clear();
+			foreach (var it in filtered) vm.Mokit.Add(it);
+		}
+	}
+
 	async void Muokkaa_Clicked(object sender, EventArgs e)
 	{
 		if (BindingContext is not MokkiPageViewModel vm || vm.ValittuMokki == null)

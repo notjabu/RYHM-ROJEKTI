@@ -13,7 +13,8 @@
                              WidthRequest="150">
 
             <SearchBar Placeholder="Hae mökkejä"
-                Margin="0,0,0,10"/>
+                Margin="0,0,0,10"
+                TextChanged="SearchBar_TextChanged"/>
 
             <Button Text="Lisää mökki" 
                 Clicked="LisaaMokki_Clicked"

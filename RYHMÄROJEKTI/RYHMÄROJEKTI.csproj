@@ -44,7 +44,8 @@
 	<!-- Fix APT2264: AAPT2 cannot handle non-ASCII characters (Ä) in paths on Windows.
 		 Redirect Android intermediate output to the solution-level obj folder which has an ASCII-only path. -->
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
-		<IntermediateOutputPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..'))\\obj\android_intermediate\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+       <!-- Use a short absolute intermediate path to avoid MAX_PATH and OneDrive path issues on Windows. -->
+		<IntermediateOutputPath>C:\android_obj\RYHMAROJEKTI\$(Configuration)\</IntermediateOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -64,6 +65,21 @@
 		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
+
+   <!-- Ensure Android intermediate directories exist to avoid AAPT2 missing-folder errors on long paths -->
+ <Target Name="EnsureAndroidIntermediateDirs" BeforeTargets="Aapt2Link;PrepareResources;UpdateAndroidResources">
+        <PropertyGroup>
+			<!-- Keep in sync with the IntermediateOutputPath used for android builds -->
+			<_AndroidIntermediateBase>C:\android_obj\RYHMAROJEKTI\$(Configuration)\</_AndroidIntermediateBase>
+		</PropertyGroup>
+      <!-- Create both variants (with and without intermediate 'android' folder) because different tasks expect different layouts -->
+		<MakeDir Directories="$(_AndroidIntermediateBase)$(TargetFramework)\assets" Condition="!Exists('$(_AndroidIntermediateBase)$(TargetFramework)\assets')" />
+		<MakeDir Directories="$(_AndroidIntermediateBase)$(TargetFramework)\android\assets" Condition="!Exists('$(_AndroidIntermediateBase)$(TargetFramework)\android\assets')" />
+		<MakeDir Directories="$(_AndroidIntermediateBase)android\assets" Condition="!Exists('$(_AndroidIntermediateBase)android\assets')" />
+		<MakeDir Directories="$(_AndroidIntermediateBase)$(TargetFramework)\src\mono" Condition="!Exists('$(_AndroidIntermediateBase)$(TargetFramework)\src\mono')" />
+		<MakeDir Directories="$(_AndroidIntermediateBase)$(TargetFramework)\android\src\mono" Condition="!Exists('$(_AndroidIntermediateBase)$(TargetFramework)\android\src\mono')" />
+		<MakeDir Directories="$(_AndroidIntermediateBase)android\src\mono" Condition="!Exists('$(_AndroidIntermediateBase)android\src\mono')" />
+	</Target>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />

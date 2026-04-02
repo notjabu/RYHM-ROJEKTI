@@ -18,6 +18,33 @@ namespace RYHMÄROJEKTI.views
             BindingContext = new PalveluPageViewModel();
         }
 
+        void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (BindingContext is PalveluPageViewModel vm)
+            {
+                var text = e.NewTextValue?.Trim() ?? string.Empty;
+                if (string.IsNullOrEmpty(text))
+                {
+                    _ = vm.LataaPalvelutAsync();
+                    return;
+                }
+
+                var filtered = new System.Collections.Generic.List<PalveluItem>();
+                foreach (var p in vm.Palvelut)
+                {
+                    if ((p.Nimi ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                        (p.Sijainti ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                        (p.Kuvaus ?? "").Contains(text, StringComparison.OrdinalIgnoreCase))
+                    {
+                        filtered.Add(p);
+                    }
+                }
+
+                vm.Palvelut.Clear();
+                foreach (var it in filtered) vm.Palvelut.Add(it);
+            }
+        }
+
         protected override async void OnAppearing()
         {
             base.OnAppearing();
@@ -51,8 +78,10 @@ namespace RYHMÄROJEKTI.views
             public PalveluItem ValittuPalvelu
             {
                 get => _valittuPalvelu;
-                set { _valittuPalvelu = value; OnPropertyChanged(); }
+                set { _valittuPalvelu = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasValittuPalvelu)); }
             }
+
+            public bool HasValittuPalvelu => ValittuPalvelu != null;
 
             public ICommand PoistaPalveluCommand { get; }
             public ICommand LisaaPalveluCommand { get; }
@@ -111,7 +140,9 @@ namespace RYHMÄROJEKTI.views
                             Id = p.Id,
                             Nimi = p.Nimi ?? string.Empty,
                             Sijainti = p.AlueNimi ?? string.Empty,
-                            Kuvaus = p.Kuvaus ?? string.Empty
+                            Kuvaus = p.Kuvaus ?? string.Empty,
+                            Hinta = p.Hinta,
+                            Alv = p.Alv
                         });
                     }
                 }
@@ -134,6 +165,12 @@ namespace RYHMÄROJEKTI.views
             public string Nimi { get; set; } = string.Empty;
             public string Sijainti { get; set; } = string.Empty;
             public string Kuvaus { get; set; } = string.Empty;
+
+            public double Hinta { get; set; }
+            public double Alv { get; set; }
+
+            public string HintaFormatted => Hinta.ToString("0.##", CultureInfo.CurrentCulture);
+            public string AlvFormatted => $"{Alv.ToString("0.##", CultureInfo.CurrentCulture)}%";
         }
     }
 
