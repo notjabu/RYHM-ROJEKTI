@@ -15,8 +15,7 @@
                             WidthRequest="150">
 
             <SearchBar Placeholder="Hae palveluita"
-                       Margin="0,0,0,10"
-                       TextChanged="SearchBar_TextChanged"/>
+                       Margin="0,0,0,10"/>
 
             <Button Text="Lisää uusi" 
                     Command="{Binding LisaaPalveluCommand}"
@@ -32,12 +31,24 @@
                     TextColor="White"/>
         </VerticalStackLayout>
 
-        <!-- Keskellä: Palveluluettelo -->
+        <!-- Keskella: Palveluluettelo -->
         <VerticalStackLayout Grid.Column="1" Spacing="10">
 
             <Label Text="Kaikki Palvelut" 
                    FontAttributes="Bold" 
                    FontSize="16"/>
+
+            <!-- Header row for list columns -->
+            <Grid ColumnDefinitions="*, Auto" Padding="0" Margin="0,0,0,2">
+                <Label Text="Palvelu"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"/>
+                <Label Text="Hinta"
+                       Grid.Column="1"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"
+                       HorizontalOptions="End"/>
+            </Grid>
 
             <ListView ItemsSource="{Binding Palvelut}"
                       SelectedItem="{Binding ValittuPalvelu}"
@@ -65,9 +76,8 @@
 
         </VerticalStackLayout>
 
-        <!-- Oikea palsta: Valitun palvelun täydet tiedot -->
-        <ScrollView Grid.Column="2"
-                    IsVisible="{Binding HasValittuPalvelu}">
+        <!-- Oikea palsta: Valitun palvelun taydet tiedot -->
+        <ScrollView Grid.Column="2">
             <VerticalStackLayout Spacing="10"
                                  Padding="10">
 
@@ -78,21 +88,21 @@
                        Margin="0,10,0,5"/>
 
                 <Label Text="Nimi:" FontAttributes="Bold"/>
-                <Entry Text="{Binding ValittuPalvelu.Nimi}" IsReadOnly="True"/>
+                <Entry Text="{Binding ValittuPalvelu.Nimi, TargetNullValue=''}" IsReadOnly="True"/>
 
                 <Label Text="Sijainti:" FontAttributes="Bold"/>
-                <Entry Text="{Binding ValittuPalvelu.Sijainti}" IsReadOnly="True"/>
+                <Entry Text="{Binding ValittuPalvelu.Sijainti, TargetNullValue=''}" IsReadOnly="True"/>
 
                 <Label Text="Kuvaus:" FontAttributes="Bold"/>
-                <Editor Text="{Binding ValittuPalvelu.Kuvaus}" 
+                <Editor Text="{Binding ValittuPalvelu.Kuvaus, TargetNullValue=''}" 
                         HeightRequest="100"
                         IsReadOnly="True"/>
 
                 <Label Text="Hinta:" FontAttributes="Bold"/>
-                <Entry Text="{Binding ValittuPalvelu.HintaFormatted}" IsReadOnly="True"/>
+                <Entry Text="{Binding ValittuPalvelu.HintaFormatted, TargetNullValue=''}" IsReadOnly="True"/>
 
                 <Label Text="ALV:" FontAttributes="Bold"/>
-                <Entry Text="{Binding ValittuPalvelu.AlvFormatted}" IsReadOnly="True"/>
+                <Entry Text="{Binding ValittuPalvelu.AlvFormatted, TargetNullValue=''}" IsReadOnly="True"/>
 
             </VerticalStackLayout>
         </ScrollView>
