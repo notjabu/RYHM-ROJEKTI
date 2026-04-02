@@ -16,6 +16,7 @@ public partial class VarausPageEdit : ContentPage
     private readonly List<MokkiDto> _mokit = new();
     private List<PalveluDto> _kaikkiPalvelut = new();
     private readonly ObservableCollection<PalveluSelection> _palvelut = new();
+    private List<MokkiVarausDto> _mokkiVaraukset = new();
 
     public string VarausId
     {
@@ -212,17 +213,50 @@ public partial class VarausPageEdit : ContentPage
 
     private void OnAsiakasPicker_Changed(object sender, EventArgs e) { }
 
-    private void OnMokkiPicker_Changed(object sender, EventArgs e)
+    private async void OnMokkiPicker_Changed(object sender, EventArgs e)
     {
         var idx = MokkiPicker.SelectedIndex;
         if (idx >= 0 && idx < _mokit.Count)
         {
             var alueId = _mokit[idx].AlueId;
             FilterPalvelutByAlue(alueId);
+            await LoadMokkiVarauksetAsync(_mokit[idx].Id ?? 0);
         }
         else
         {
             _palvelut.Clear();
+            _mokkiVaraukset.Clear();
+            VarauksetFrame.IsVisible = false;
+        }
+    }
+
+    private async Task LoadMokkiVarauksetAsync(int mokkiId)
+    {
+        try
+        {
+            var list = await ApiClient.Http.GetFromJsonAsync<List<MokkiVarausDto>>($"/api/varaus/mokki/{mokkiId}");
+            _mokkiVaraukset = list ?? new();
+
+            // Exclude the reservation currently being edited
+            if (_varausId.HasValue)
+                _mokkiVaraukset.RemoveAll(v => v.VarausId == _varausId.Value);
+
+            if (_mokkiVaraukset.Count > 0)
+            {
+                var lines = _mokkiVaraukset.Select(v =>
+                    $"\u2022 {v.VarattuAlkuPvm:dd.MM.yyyy} \u2013 {v.VarattuLoppuPvm:dd.MM.yyyy}");
+                VarauksetLabel.Text = string.Join("\n", lines);
+                VarauksetFrame.IsVisible = true;
+            }
+            else
+            {
+                VarauksetFrame.IsVisible = false;
+            }
+        }
+        catch
+        {
+            _mokkiVaraukset = new();
+            VarauksetFrame.IsVisible = false;
         }
     }
 
@@ -279,6 +313,18 @@ public partial class VarausPageEdit : ContentPage
         if (loppuPvm <= alkuPvm)
         {
             await DisplayAlert("Virhe", "Loppupäivämäärän täytyy olla vähintään päivä alkupäivämäärän jälkeen.", "OK");
+            return;
+        }
+
+        // Check for overlapping reservations
+        var overlap = _mokkiVaraukset.FirstOrDefault(v =>
+            v.VarattuAlkuPvm.HasValue && v.VarattuLoppuPvm.HasValue &&
+            alkuPvm < v.VarattuLoppuPvm.Value && loppuPvm > v.VarattuAlkuPvm.Value);
+        if (overlap != null)
+        {
+            await DisplayAlert("Virhe",
+                $"Mökki on jo varattu aikavälillä {overlap.VarattuAlkuPvm:dd.MM.yyyy} \u2013 {overlap.VarattuLoppuPvm:dd.MM.yyyy}. Valitse toiset päivämäärät.",
+                "OK");
             return;
         }
 

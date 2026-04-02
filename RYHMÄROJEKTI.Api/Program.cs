@@ -392,6 +392,32 @@ app.MapDelete("/api/asiakas/{id:int}", async (int id) =>
 
 // ─── Varaus ─────────────────────────────────────────────────────────────────
 
+app.MapGet("/api/varaus/mokki/{mokkiId:int}", async (int mokkiId) =>
+{
+    await using var conn = await OpenDbAsync();
+    const string sql = """
+        SELECT varaus_id, varattu_alkupvm, varattu_loppupvm
+        FROM vn.varaus
+        WHERE mokki_id = @mokkiId
+        ORDER BY varattu_alkupvm
+        """;
+    await using var cmd = new SqlCommand(sql, conn);
+    cmd.Parameters.AddWithValue("@mokkiId", mokkiId);
+    await using var rdr = await cmd.ExecuteReaderAsync();
+
+    var list = new List<object>();
+    while (await rdr.ReadAsync())
+    {
+        list.Add(new
+        {
+            VarausId = Int(rdr, "varaus_id"),
+            VarattuAlkuPvm = NullDt(rdr, "varattu_alkupvm"),
+            VarattuLoppuPvm = NullDt(rdr, "varattu_loppupvm")
+        });
+    }
+    return Results.Ok(list);
+});
+
 app.MapGet("/api/varaus", async () =>
 {
     await using var conn = await OpenDbAsync();

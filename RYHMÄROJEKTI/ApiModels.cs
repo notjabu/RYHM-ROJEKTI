@@ -148,3 +148,10 @@ public class VarausPalveluSaveDto
     public int PalveluId { get; set; }
     public int Lkm { get; set; }
 }
+
+public class MokkiVarausDto
+{
+    public int VarausId { get; set; }
+    public DateTime? VarattuAlkuPvm { get; set; }
+    public DateTime? VarattuLoppuPvm { get; set; }
+}

@@ -30,6 +30,18 @@
                     HorizontalOptions="FillAndExpand"
                     SelectedIndexChanged="OnMokkiPicker_Changed" />
 
+            <!-- Mökin olemassa olevat varaukset -->
+            <Frame x:Name="VarauksetFrame"
+                   IsVisible="False"
+                   Padding="10" CornerRadius="6"
+                   BorderColor="#E0E0E0" BackgroundColor="#FFF8E1">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Mökin nykyiset varaukset:" FontAttributes="Bold" FontSize="13" TextColor="#555"/>
+                    <Label x:Name="VarauksetLabel"
+                           FontSize="12" TextColor="#333"/>
+                </VerticalStackLayout>
+            </Frame>
+
             <!-- Lisäpalvelut -->
             <Label Text="Lisäpalvelut" FontAttributes="Bold" />
             <ListView x:Name="PalvelutListView"
