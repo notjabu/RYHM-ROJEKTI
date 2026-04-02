@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http.Json;
 
 namespace RYHMÄROJEKTI.views;
@@ -127,8 +128,8 @@ public partial class LaskuPageEdit : ContentPage
             if (dto != null)
             {
                 SelectVarausById(dto.VarausId ?? 0);
-                AlvEntry.Text = dto.Alv.ToString("0.##");
-                MaksettuEntry.Text = dto.Maksettu.ToString("0.##");
+                AlvEntry.Text = dto.Alv.ToString("0.##", CultureInfo.InvariantCulture);
+                MaksettuEntry.Text = dto.Maksettu.ToString("0.##", CultureInfo.InvariantCulture);
 
                 _origVarausId = dto.VarausId;
                 _origSumma = dto.Summa;
@@ -140,12 +141,12 @@ public partial class LaskuPageEdit : ContentPage
                 if (diff < 0)
                 {
                     AdjustPicker.SelectedIndex = 1; // "−"
-                    AdjustEntry.Text = Math.Abs(diff).ToString("0.##");
+                    AdjustEntry.Text = Math.Abs(diff).ToString("0.##", CultureInfo.InvariantCulture);
                 }
                 else if (diff > 0)
                 {
                     AdjustPicker.SelectedIndex = 0; // "+"
-                    AdjustEntry.Text = diff.ToString("0.##");
+                    AdjustEntry.Text = diff.ToString("0.##", CultureInfo.InvariantCulture);
                 }
                 else
                 {
@@ -245,8 +246,8 @@ public partial class LaskuPageEdit : ContentPage
         if (!string.IsNullOrWhiteSpace(AdjustEntry.Text))
         {
             if (!double.TryParse(AdjustEntry.Text.Trim(),
-                System.Globalization.NumberStyles.Any,
-                System.Globalization.CultureInfo.InvariantCulture, out adjust))
+                NumberStyles.Float,
+                CultureInfo.InvariantCulture, out adjust))
             {
                 double.TryParse(AdjustEntry.Text.Trim(), out adjust);
             }
@@ -256,7 +257,7 @@ public partial class LaskuPageEdit : ContentPage
         double total = _baseSumma + (isMinus ? -adjust : adjust);
         if (total < 0) total = 0;
 
-        SummaEntry.Text = total.ToString("0.00");
+        SummaEntry.Text = total.ToString("0.00", CultureInfo.InvariantCulture);
     }
 
     // ── Cancel ──────────────────────────────────────────────────────────
@@ -278,22 +279,22 @@ public partial class LaskuPageEdit : ContentPage
 
         var varausId = selectedVaraus.VarausId ?? 0;
 
-        if (!double.TryParse(SummaEntry.Text?.Trim(), System.Globalization.NumberStyles.Any,
-            System.Globalization.CultureInfo.InvariantCulture, out var summa))
+        if (!double.TryParse(SummaEntry.Text?.Trim(), NumberStyles.Float,
+            CultureInfo.InvariantCulture, out var summa))
         {
             if (!double.TryParse(SummaEntry.Text?.Trim(), out summa))
                 summa = 0;
         }
 
-        if (!double.TryParse(AlvEntry.Text?.Trim(), System.Globalization.NumberStyles.Any,
-            System.Globalization.CultureInfo.InvariantCulture, out var alv))
+        if (!double.TryParse(AlvEntry.Text?.Trim(), NumberStyles.Float,
+            CultureInfo.InvariantCulture, out var alv))
         {
             if (!double.TryParse(AlvEntry.Text?.Trim(), out alv))
                 alv = 0;
         }
 
-        if (!double.TryParse(MaksettuEntry.Text?.Trim(), System.Globalization.NumberStyles.Any,
-            System.Globalization.CultureInfo.InvariantCulture, out var maksettu))
+        if (!double.TryParse(MaksettuEntry.Text?.Trim(), NumberStyles.Float,
+            CultureInfo.InvariantCulture, out var maksettu))
         {
             if (!double.TryParse(MaksettuEntry.Text?.Trim(), out maksettu))
                 maksettu = 0;
