@@ -142,9 +142,10 @@ public LaskuPage()
                         page.Content().Column(col =>
                         {
                             col.Spacing(10);
-                            col.Item().Text($"Laskun numero: {ValittuLasku.Id}");
-                            col.Item().Text($"Asiakas: {ValittuLasku.AsiakasNimi}");
+                            col.Item().Text($"Laskun tunnus: {ValittuLasku.Id}");
+                            col.Item().Text($"Asiakkaan nimi: {ValittuLasku.AsiakasNimi}");
                             col.Item().Text($"Mökki: {ValittuLasku.MokkiNimi}");
+                            col.Item().Text($"Ajalta: {ValittuLasku.VarattuAlkuPvm} - {ValittuLasku.VarattuLoppuPvm}");
                             col.Item().LineHorizontal(1);
                             col.Item().Text($"Summa: {ValittuLasku.Summa:F2} €");
                             col.Item().Text($"ALV: {ValittuLasku.Alv}%");
@@ -192,8 +193,8 @@ public LaskuPage()
                         AsiakasNimi = dto.AsiakasNimi ?? string.Empty,
                         MokkiNimi = dto.MokkiNimi ?? string.Empty,
                         VarattuPvm = dto.VarattuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
-                        VarattuAlkupvm = dto.VarattuAlkuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
-                        VarattuLoppupvm = dto.VarattuLoppuPvm?.ToString("dd.MM.yyyy") ?? string.Empty
+                        VarattuAlkuPvm = dto.VarattuAlkuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
+                        VarattuLoppuPvm = dto.VarattuLoppuPvm?.ToString("dd.MM.yyyy") ?? string.Empty
                     });
                 }
             }
@@ -221,8 +222,8 @@ public LaskuPage()
         public string AsiakasNimi { get; set; } = string.Empty;
         public string MokkiNimi { get; set; } = string.Empty;
         public string VarattuPvm { get; set; } = string.Empty;
-        public string VarattuAlkupvm { get; set; } = string.Empty;
-        public string VarattuLoppupvm { get; set; } = string.Empty;
+        public string VarattuAlkuPvm { get; set; } = string.Empty;
+        public string VarattuLoppuPvm { get; set; } = string.Empty;
         public string LaskutusTapa { get; set; } // Lisätty tämä
         public double Maksamatta => Summa - Maksettu;
         public string Otsikko => $"Lasku #{Id} – {AsiakasNimi}";
