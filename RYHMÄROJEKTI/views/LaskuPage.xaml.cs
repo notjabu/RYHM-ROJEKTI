@@ -143,6 +143,7 @@ public LaskuPage()
                         {
                             col.Spacing(10);
                             col.Item().Text($"Laskun tunnus: {ValittuLasku.Id}");
+                            col.Item().Text($"Asiakkaan tunnus: {ValittuLasku.AsiakasID}");
                             col.Item().Text($"Asiakkaan nimi: {ValittuLasku.AsiakasNimi}");
                             col.Item().Text($"Mökki: {ValittuLasku.MokkiNimi}");
                             col.Item().Text($"Ajalta: {ValittuLasku.VarattuAlkuPvm} - {ValittuLasku.VarattuLoppuPvm}");
@@ -194,7 +195,8 @@ public LaskuPage()
                         MokkiNimi = dto.MokkiNimi ?? string.Empty,
                         VarattuPvm = dto.VarattuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
                         VarattuAlkuPvm = dto.VarattuAlkuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
-                        VarattuLoppuPvm = dto.VarattuLoppuPvm?.ToString("dd.MM.yyyy") ?? string.Empty
+                        VarattuLoppuPvm = dto.VarattuLoppuPvm?.ToString("dd.MM.yyyy") ?? string.Empty,
+                        AsiakasID = dto.AsiakasId
                     });
                 }
             }
@@ -216,6 +218,7 @@ public LaskuPage()
     {
         public int? Id { get; set; }
         public int? VarausId { get; set; }
+        public int? AsiakasID { get; set; } // AsiakasID kenttä lisätty
         public double Summa { get; set; }
         public double Alv { get; set; }
         public double Maksettu { get; set; }

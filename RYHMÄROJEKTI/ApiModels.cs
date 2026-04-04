@@ -103,6 +103,7 @@ public class LaskuDto
     public DateTime? VarattuPvm { get; set; }
     public DateTime? VarattuAlkuPvm { get; set; }
     public DateTime? VarattuLoppuPvm { get; set; }
+    public int? AsiakasId { get; set; }
 }
 
 public class LaskuSaveDto

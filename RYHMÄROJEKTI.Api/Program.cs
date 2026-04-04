@@ -700,7 +700,8 @@ app.MapGet("/api/lasku", async () =>
             Str(rdr, "mokkinimi"),
             NullDt(rdr, "varattu_pvm"),
             NullDt(rdr, "varattu_alkupvm"),
-            NullDt(rdr, "varattu_loppupvm")));
+            NullDt(rdr, "varattu_loppupvm"),
+            NullInt(rdr, "asiakas_id")));
     }
     return Results.Ok(list);
 });
@@ -721,7 +722,7 @@ app.MapGet("/api/lasku/{id:int}", async (int id) =>
         Dbl(rdr, "summa"),
         Dbl(rdr, "alv"),
         Dbl(rdr, "maksettu"),
-        "", "", null, null, null));
+        "", "", null, null, null, NullInt(rdr, "asiakas_id")));
 });
 
 app.MapPost("/api/lasku", async (LaskuSaveDto dto) =>
@@ -919,7 +920,8 @@ record VarausDto(int? VarausId, int? AsiakasId, int? MokkiId, string MokkiNimi,
 
 record LaskuDto(int? Id, int? VarausId, double Summa, double Alv, double Maksettu,
     string AsiakasNimi, string MokkiNimi,
-    DateTime? VarattuPvm, DateTime? VarattuAlkuPvm, DateTime? VarattuLoppuPvm);
+    DateTime? VarattuPvm, DateTime? VarattuAlkuPvm, DateTime? VarattuLoppuPvm,
+    int? AsiakasId);
 record LaskuSaveDto(int VarausId, double Summa, double Alv, double Maksettu);
 
 record PalveluDto(int? Id, int? AlueId, string Nimi, string Kuvaus,
