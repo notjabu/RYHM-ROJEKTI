@@ -7,6 +7,22 @@
     xmlns:views="clr-namespace:RYHMÄROJEKTI.views"
     Title="RYHMÄROJEKTI">
 
+    <Shell.TitleView>
+        <Grid ColumnDefinitions="*, Auto" Padding="0,0,15,0">
+            <Label Text="{Binding PageTitle}"
+               VerticalOptions="Center"
+               FontAttributes="Bold"
+               FontSize="18"/>
+            <Label Text="{Binding CurrentTime}"
+               Grid.Column="1"
+               VerticalOptions="Center"
+               FontSize="14"
+               TextColor="White"
+               Opacity="0.85"/>
+        </Grid>
+    </Shell.TitleView>
+    
+    
     <FlyoutItem>
         <Tab Title="Etusivu">
             <ShellContent ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />
@@ -27,10 +43,11 @@
         <Tab Title="Asiakasvarausten hallinta">
             <ShellContent ContentTemplate="{DataTemplate views:AsiakasPage}" Route="AsiakasPage"/>
         </Tab>
-        
+
         <Tab Title="Laskujen hallinta">
             <ShellContent ContentTemplate="{DataTemplate views:LaskuPage}" Route="LaskuPage"/>
         </Tab>
+
     </FlyoutItem>
 
 </Shell>

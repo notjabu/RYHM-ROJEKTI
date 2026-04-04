@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:RYHMÄROJEKTI.views"
              x:Class="RYHMÄROJEKTI.views.PalveluPage"
-             Title="PalveluPage">
+             Title="Palveluiden hallinta">
 
     <Grid ColumnDefinitions="Auto, *, 2*"
           Padding="10"
