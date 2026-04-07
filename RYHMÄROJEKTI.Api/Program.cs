@@ -207,7 +207,7 @@ app.MapGet("/api/mokki/{id:int}", async (int id) =>
 {
     await using var conn = await OpenDbAsync();
     const string sql = """
-        SELECT mokkinimi, katuosoite, postinro, hinta,
+        SELECT alue_id, mokkinimi, katuosoite, postinro, hinta,
                henkilomaara, varustelu, kuvaus
         FROM vn.mokki WHERE mokki_id = @id
         """;
@@ -218,7 +218,7 @@ app.MapGet("/api/mokki/{id:int}", async (int id) =>
     if (!await rdr.ReadAsync()) return Results.NotFound();
 
     return Results.Ok(new MokkiDto(
-        id, null,
+        id, NullInt(rdr, "alue_id"),
         Str(rdr, "postinro"),
         Str(rdr, "mokkinimi"),
         Str(rdr, "katuosoite"),
@@ -235,10 +235,10 @@ app.MapPost("/api/mokki", async (MokkiSaveDto dto) =>
     const string sql = """
         INSERT INTO vn.mokki (alue_id, mokkinimi, katuosoite, postinro, hinta,
                            henkilomaara, varustelu, kuvaus)
-        VALUES ((SELECT TOP 1 alue_id FROM vn.alue WHERE sijainti = (SELECT toimipaikka FROM vn.posti WHERE postinro = @postinro)),
-                @nimi, @katu, @postinro, @hinta, @henkilomaara, @varustelu, @kuvaus)
+        VALUES (@alueId, @nimi, @katu, @postinro, @hinta, @henkilomaara, @varustelu, @kuvaus)
         """;
     await using var cmd = new SqlCommand(sql, conn);
+    cmd.Parameters.AddWithValue("@alueId", dto.AlueId);
     cmd.Parameters.AddWithValue("@nimi", dto.Mokkinimi);
     cmd.Parameters.AddWithValue("@katu", dto.Katuosoite);
     cmd.Parameters.AddWithValue("@postinro", dto.Postinro);
@@ -258,10 +258,11 @@ app.MapPut("/api/mokki/{id:int}", async (int id, MokkiSaveDto dto) =>
         SET mokkinimi = @nimi, katuosoite = @katu, postinro = @postinro,
             hinta = @hinta, henkilomaara = @henkilomaara,
             varustelu = @varustelu, kuvaus = @kuvaus,
-            alue_id = (SELECT TOP 1 alue_id FROM vn.alue WHERE sijainti = (SELECT toimipaikka FROM vn.posti WHERE postinro = @postinro))
+            alue_id = @alueId
         WHERE mokki_id = @id
         """;
     await using var cmd = new SqlCommand(sql, conn);
+    cmd.Parameters.AddWithValue("@alueId", dto.AlueId);
     cmd.Parameters.AddWithValue("@nimi", dto.Mokkinimi);
     cmd.Parameters.AddWithValue("@katu", dto.Katuosoite);
     cmd.Parameters.AddWithValue("@postinro", dto.Postinro);
@@ -902,7 +903,7 @@ record AlueSaveDto(string Nimi, string Sijainti, string Kuvaus);
 record MokkiDto(int? Id, int? AlueId, string Postinro, string Mokkinimi,
     string Katuosoite, double Hinta, string Kuvaus,
     int Henkilomaara, string Varustelu, string Toimipaikka);
-record MokkiSaveDto(string Mokkinimi, string Katuosoite, string Postinro,
+record MokkiSaveDto(int AlueId, string Mokkinimi, string Katuosoite, string Postinro,
     double Hinta, int Henkilomaara, string Varustelu, string Kuvaus);
 
 record AsiakasDto(int? Id, string Etunimi, string Sukunimi, string Lahiosoite,

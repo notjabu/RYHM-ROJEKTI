@@ -15,8 +15,10 @@ private int? _mokkiId;
     private int _origHenkilomaara;
     private string _origVarustelu = string.Empty;
     private string _origKuvaus = string.Empty;
+    private int _origAlueId;
 
     private readonly List<PostiDto> _postiItems = new();
+    private readonly List<AlueDto> _alueItems = new();
 
     public string MokkiId
     {
@@ -36,6 +38,7 @@ private int? _mokkiId;
     {
         base.OnAppearing();
 
+        await LoadAlueListAsync();
         await LoadPostiListAsync();
 
         if (_mokkiId.HasValue)
@@ -46,6 +49,7 @@ private int? _mokkiId;
         else
         {
             Title = "Lisää mökki";
+            AluePicker.SelectedIndex = -1;
             NimiEntry.Text = string.Empty;
             KatuosoiteEntry.Text = string.Empty;
             PostiPicker.SelectedIndex = -1;
@@ -54,6 +58,49 @@ private int? _mokkiId;
             VarusteluEditor.Text = string.Empty;
             KuvausEditor.Text = string.Empty;
         }
+    }
+
+    // ── Alue picker ─────────────────────────────────────────────────────
+    private async Task LoadAlueListAsync()
+    {
+        try
+        {
+            _alueItems.Clear();
+            AluePicker.Items.Clear();
+
+            var list = await ApiClient.Http.GetFromJsonAsync<List<AlueDto>>("/api/alue");
+            if (list == null) return;
+
+            foreach (var a in list)
+            {
+                _alueItems.Add(a);
+                AluePicker.Items.Add(a.Nimi);
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Virhe", "Alueiden lataus epäonnistui: " + ex.Message, "OK");
+        }
+    }
+
+    private void SelectAlueById(int alueId)
+    {
+        for (int i = 0; i < _alueItems.Count; i++)
+        {
+            if (_alueItems[i].Id == alueId)
+            {
+                AluePicker.SelectedIndex = i;
+                return;
+            }
+        }
+    }
+
+    private AlueDto? GetSelectedAlue()
+    {
+        var idx = AluePicker.SelectedIndex;
+        if (idx >= 0 && idx < _alueItems.Count)
+            return _alueItems[idx];
+        return null;
     }
 
     // ── Posti picker ────────────────────────────────────────────────────
@@ -137,6 +184,7 @@ private int? _mokkiId;
 
             if (dto != null)
             {
+                SelectAlueById(dto.AlueId ?? 0);
                 NimiEntry.Text = dto.Mokkinimi ?? string.Empty;
                 KatuosoiteEntry.Text = dto.Katuosoite ?? string.Empty;
                 SelectPostiByPostinro(dto.Postinro ?? string.Empty);
@@ -145,6 +193,7 @@ private int? _mokkiId;
                 VarusteluEditor.Text = dto.Varustelu ?? string.Empty;
                 KuvausEditor.Text = dto.Kuvaus ?? string.Empty;
 
+                _origAlueId = dto.AlueId ?? 0;
                 _origNimi = dto.Mokkinimi ?? string.Empty;
                 _origKatuosoite = dto.Katuosoite ?? string.Empty;
                 _origPostinro = dto.Postinro ?? string.Empty;
@@ -184,6 +233,14 @@ private int? _mokkiId;
         var selectedPosti = GetSelectedPosti();
         var postinro = selectedPosti?.Postinro ?? string.Empty;
 
+        var selectedAlue = GetSelectedAlue();
+        if (selectedAlue == null)
+        {
+            await DisplayAlert("Virhe", "Valitse alue.", "OK");
+            return;
+        }
+        var alueId = selectedAlue.Id ?? 0;
+
         if (!double.TryParse(HintaEntry.Text?.Trim(), System.Globalization.NumberStyles.Any,
             System.Globalization.CultureInfo.InvariantCulture, out var hinta))
         {
@@ -202,6 +259,7 @@ private int? _mokkiId;
 
         var saveDto = new MokkiSaveDto
         {
+            AlueId = alueId,
             Mokkinimi = nimi,
             Katuosoite = katuosoite,
             Postinro = postinro,
@@ -214,7 +272,7 @@ private int? _mokkiId;
         // ── Editing ─────────────────────────────────────────────────────
         if (_mokkiId.HasValue)
         {
-            if (nimi == _origNimi && katuosoite == _origKatuosoite && postinro == _origPostinro
+            if (alueId == _origAlueId && nimi == _origNimi && katuosoite == _origKatuosoite && postinro == _origPostinro
                 && hinta == _origHinta && henkilomaara == _origHenkilomaara
                 && varustelu == _origVarustelu && kuvaus == _origKuvaus)
             {

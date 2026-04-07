@@ -105,18 +105,7 @@
                 <Label Text="Loppupvm:" FontAttributes="Bold"/>
                 <Entry Text="{Binding ValittuLasku.VarattuLoppuPvm}" IsReadOnly="True"/>
 
-           
-            <Label Text="Laskutustapa" FontAttributes="Bold" Margin="0,10,0,0"/>
-            <Picker SelectedItem="{Binding ValittuLasku.LaskutusTapa}">
-                <Picker.ItemsSource>
-                    <x:Array Type="{x:Type x:String}">
-                        <x:String>Paperilasku</x:String>
-                        <x:String>Sähköpostilasku</x:String>
-                    </x:Array>
-                </Picker.ItemsSource>
-            </Picker>
-
-            <Button Text="Tallenna lasku PDF-tiedostoksi"
+                <Button Text="Tallenna lasku PDF-tiedostoksi"
         Command="{Binding LuoPdfLaskuCommand}"
         BackgroundColor="#27AE60"
         TextColor="White"

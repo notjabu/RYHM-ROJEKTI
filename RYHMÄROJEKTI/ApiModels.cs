@@ -38,6 +38,7 @@ public class MokkiDto
 
 public class MokkiSaveDto
 {
+    public int AlueId { get; set; }
     public string Mokkinimi { get; set; } = "";
     public string Katuosoite { get; set; } = "";
     public string Postinro { get; set; } = "";

@@ -9,6 +9,11 @@
             <Label Text="{Binding Title, Source={RelativeSource AncestorType={x:Type ContentPage}}}"
                    FontAttributes="Bold" FontSize="18"/>
 
+            <Label Text="Alue" FontAttributes="Bold"/>
+            <Picker x:Name="AluePicker"
+                    Title="Valitse alue"
+                    HorizontalOptions="FillAndExpand" />
+
             <Label Text="Nimi" FontAttributes="Bold"/>
             <Entry x:Name="NimiEntry" Placeholder="Mökin nimi"/>
 

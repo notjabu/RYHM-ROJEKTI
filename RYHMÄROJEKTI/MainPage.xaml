@@ -3,12 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RYHMÄROJEKTI.MainPage"
              Title="Etusivu">
-
+    <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">
 
             <!-- Yläosa: logo + yrityksen nimi -->
             <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                <Image Source="kaksi.png"
+                <Image Source="vnlogo.png"
                        WidthRequest="120"
                        HeightRequest="120" />
 
@@ -18,61 +18,67 @@
                        VerticalOptions="Center"/>
             </HorizontalStackLayout>
 
-            <!-- Otsikko -->
-            <Label Text="Mökkien määrä alueittain"
-                   FontSize="18"
-                   FontAttributes="Bold" />
-        
-            <!-- Taulukko -->
-        <Grid RowDefinitions="Auto,*">
+            <!-- Aikavälin valinta -->
+            <Frame Padding="12" CornerRadius="8" BorderColor="#E0E0E0" BackgroundColor="#E0E0E0">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Varaustilanteen tarkastelu" FontAttributes="Bold" TextColor="Black"  FontSize="16"/>
+                    <Label x:Name="ModeLabel" Text="Näytetään tämänhetkinen tilanne" FontSize="13" TextColor="#555"/>
 
-            <!-- Otsikkorivi -->
-            <Grid ColumnDefinitions="*,*" Padding="10">
-                <Label Text="Alue"
-               FontAttributes="Bold"/>
+                    <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto, Auto, Auto"  ColumnSpacing="8" RowSpacing="4">
+                        <Label Grid.Column="0" Grid.Row="0"  Text="Alku:" VerticalOptions="Center" TextColor="Black"/>
+                        <DatePicker x:Name="AlkuDatePicker" Grid.Column="1" Grid.Row="0"
+                                    Format="dd.MM.yyyy"
+                                    DateSelected="OnDateSelected" TextColor="Black"/>
+                        <Label Grid.Column="0" Grid.Row="1" Text="Loppu:" TextColor="Black" VerticalOptions="Center"/>
+                        <DatePicker x:Name="LoppuDatePicker" Grid.Column="1" Grid.Row="1"
+                                    Format="dd.MM.yyyy"
+                                    DateSelected="OnDateSelected" TextColor="Black"/>
+                    </Grid>
 
-                <Label Text="Mökkien määrä"
-               Grid.Column="1"
-               FontAttributes="Bold"
-               HorizontalOptions="End"/>
+                    <HorizontalStackLayout Spacing="10">
+                        <Button Text="Hae" Clicked="OnHaeClicked"
+                                BackgroundColor="#512BD4" TextColor="White" FontSize="13"/>
+                        <Button Text="Näytä nykytilanne" Clicked="OnNykytilanne_Clicked"
+                                FontSize="13"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
 
-                <Label Text="Palveluiden määrä"
-                    Grid.Column="1"
-                    FontAttributes="Bold"
-                    HorizontalOptions="Center"/>
-            </Grid>
-
-            <!-- Yksi lista -->
-            <ListView Grid.Row="1"
-              ItemsSource="{Binding Tilasto}"
-              HasUnevenRows="True">
-
-                <ListView.ItemTemplate>
+            <!-- Varatut mökit -->
+            <Label Text="Varatut mökit" FontAttributes="Bold" FontSize="16" Margin="0,10,0,0"/>
+            <Label x:Name="MokitEmptyLabel" Text="Ei varattuja mökkejä." IsVisible="False" TextColor="#888"/>
+            <CollectionView x:Name="MokitCollection" IsVisible="False">
+                <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <ViewCell>
-                            <Grid ColumnDefinitions="*,*" Padding="10">
-
-                                <!-- Alue -->
-                                <Label Text="{Binding Alue}"
-                               FontAttributes="Bold"/>
-
-                                <!-- Määrä -->
-                                <Label Text="{Binding Maara2}"
-                                        Grid.Column="1"
-                                        HorizontalOptions="Center"/>
-
-                                <!-- Määrä -->
-                                <Label Text="{Binding Maara}"
-                               Grid.Column="1"
-                               HorizontalOptions="End"/>
-                            </Grid>
-                        </ViewCell>
+                        <Frame Padding="10" Margin="0,4" CornerRadius="6"
+                               BorderColor="#BBDEFB" BackgroundColor="#E0E0E0" >
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="{Binding Mokkinimi}" FontAttributes="Bold" FontSize="14" TextColor="Black"/>
+                                <Label Text="{Binding Ajanjakso}" FontSize="12" TextColor="#555"/>
+                                <Label Text="{Binding Asiakas}" FontSize="12" TextColor="#555"/>
+                            </VerticalStackLayout>
+                        </Frame>
                     </DataTemplate>
-                </ListView.ItemTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
 
-            </ListView>
-         </Grid>
+            <!-- Varatut palvelut -->
+            <Label Text="Varatut palvelut" FontAttributes="Bold" FontSize="16" Margin="0,10,0,0"/>
+            <Label x:Name="PalvelutEmptyLabel" Text="Ei varattuja palveluita." IsVisible="False" TextColor="#888"/>
+            <CollectionView x:Name="PalvelutCollection" IsVisible="False">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Padding="10" Margin="0,4" CornerRadius="6"
+                               BorderColor="#C8E6C9" BackgroundColor="#E0E0E0">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="{Binding PalveluNimi}" FontAttributes="Bold" FontSize="14" TextColor="Black"/>
+                                <Label Text="{Binding Tiedot}" FontSize="12" TextColor="#555"/>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
 
-    </VerticalStackLayout>
-
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
