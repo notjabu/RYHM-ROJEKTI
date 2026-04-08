@@ -50,7 +50,10 @@ public LaskuPage()
             {
                 if ((l.Otsikko ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
                     (l.AsiakasNimi ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
-                    (l.MokkiNimi ?? "").Contains(text, StringComparison.OrdinalIgnoreCase))
+                    (l.MokkiNimi ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                    (l.VarattuPvm ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                    (l.VarattuAlkuPvm ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                    (l.VarattuLoppuPvm ?? "").Contains(text, StringComparison.OrdinalIgnoreCase))
                 {
                     filtered.Add(l);
                 }
