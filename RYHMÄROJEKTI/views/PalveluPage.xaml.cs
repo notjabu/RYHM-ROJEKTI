@@ -34,7 +34,8 @@ namespace RYHMÄROJEKTI.views
                 {
                     if ((p.Nimi ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
                         (p.Sijainti ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
-                        (p.Kuvaus ?? "").Contains(text, StringComparison.OrdinalIgnoreCase))
+                        (p.Kuvaus ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                        (p.Hinta.ToString() ?? "").Contains(text, StringComparison.OrdinalIgnoreCase))
                     {
                         filtered.Add(p);
                     }
