@@ -49,7 +49,9 @@ public partial class MokkiPage : ContentPage
 					(m.Toimipaikka ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
 					(m.Postinro ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
 					(m.Hinta.ToString() ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
-					(m.Kuvaus ?? "").Contains(text, StringComparison.OrdinalIgnoreCase))
+					(m.Kuvaus ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+					(m.Varustelu ?? "").Contains(text, StringComparison.OrdinalIgnoreCase) ||
+					(m.Henkilomaara.ToString() ?? "").Contains(text, StringComparison.OrdinalIgnoreCase))
                 {
 					filtered.Add(m);
 				}
