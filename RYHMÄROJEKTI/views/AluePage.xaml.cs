@@ -111,6 +111,13 @@ public AluePage()
                     return;
                 }
 
+                if (ValittuAlue.MokkiCount > 0)
+                {
+                    await Application.Current.MainPage.DisplayAlert("Varoitus",
+                        $"Aluetta \"{ValittuAlue.Nimi}\" ei voi poistaa, koska siihen on liitetty {ValittuAlue.MokkiCount} mökkiä. Poista tai siirrä mökit ensin.", "OK");
+                    return;
+                }
+
                 bool ok = await Application.Current.MainPage.DisplayAlert("Vahvista", $"Poistetaanko alue \"{ValittuAlue.Nimi}\"?", "Kyllä", "Ei");
                 if (!ok) return;
 
