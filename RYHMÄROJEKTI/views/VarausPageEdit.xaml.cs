@@ -75,7 +75,7 @@ public partial class VarausPageEdit : ContentPage
                 AsiakasPicker.Items.Add($"{a.Etunimi} {a.Sukunimi}".Trim());
             }
 
-            // If we just came back from AsiakasPageEdit, select the last added asiakas
+            // Jos tultu AsiakasPageEdit:ista, valitsee viimeisimman lisatyn asiakkaan
             if (_asiakkaat.Count > 0)
                 AsiakasPicker.SelectedIndex = _asiakkaat.Count - 1;
         }
@@ -152,7 +152,7 @@ public partial class VarausPageEdit : ContentPage
                 return;
             }
 
-            // Select asiakas
+            // Valitse asiakas
             for (int i = 0; i < _asiakkaat.Count; i++)
             {
                 if (_asiakkaat[i].Id == dto.AsiakasId)
@@ -162,7 +162,7 @@ public partial class VarausPageEdit : ContentPage
                 }
             }
 
-            // Select mökki (this also triggers palvelut filtering via OnMokkiPicker_Changed)
+            // Valitse mokki
             for (int i = 0; i < _mokit.Count; i++)
             {
                 if (_mokit[i].Id == dto.MokkiId)
@@ -172,7 +172,7 @@ public partial class VarausPageEdit : ContentPage
                 }
             }
 
-            // Preselect palvelut that were on this varaus
+            // Preselect palvelut jotka ovat tassa varauksessa
             if (dto.Palvelut != null)
             {
                 foreach (var vp in dto.Palvelut)
@@ -186,7 +186,7 @@ public partial class VarausPageEdit : ContentPage
                 }
             }
 
-            // Set dates
+            // Syota paivat
             if (dto.VarattuAlkuPvm.HasValue)
             {
                 AlkuPvmPicker.MinimumDate = dto.VarattuAlkuPvm.Value < DateTime.Today
@@ -199,7 +199,7 @@ public partial class VarausPageEdit : ContentPage
                 LoppuPvmPicker.Date = dto.VarattuLoppuPvm.Value;
             }
 
-            // Set vahvistus
+            // Syota vahvistus
             VahvistaCheckBox.IsChecked = dto.VahvistusPvm.HasValue;
         }
         catch (Exception ex)
@@ -237,7 +237,6 @@ public partial class VarausPageEdit : ContentPage
             var list = await ApiClient.Http.GetFromJsonAsync<List<MokkiVarausDto>>($"/api/varaus/mokki/{mokkiId}");
             _mokkiVaraukset = list ?? new();
 
-            // Exclude the reservation currently being edited
             if (_varausId.HasValue)
                 _mokkiVaraukset.RemoveAll(v => v.VarausId == _varausId.Value);
 
@@ -285,7 +284,7 @@ public partial class VarausPageEdit : ContentPage
 
     private async void OnSaveClicked(object sender, EventArgs e)
     {
-        // Validate asiakas
+        // Validioi asiakas
         var asiakasIdx = AsiakasPicker.SelectedIndex;
         if (asiakasIdx < 0 || asiakasIdx >= _asiakkaat.Count)
         {
@@ -293,7 +292,7 @@ public partial class VarausPageEdit : ContentPage
             return;
         }
 
-        // Validate mökki
+        // Validioi mökki
         var mokkiIdx = MokkiPicker.SelectedIndex;
         if (mokkiIdx < 0 || mokkiIdx >= _mokit.Count)
         {
@@ -316,7 +315,7 @@ public partial class VarausPageEdit : ContentPage
             return;
         }
 
-        // Check for overlapping reservations
+        // Tarkistaa päällekkäis varaukset
         var overlap = _mokkiVaraukset.FirstOrDefault(v =>
             v.VarattuAlkuPvm.HasValue && v.VarattuLoppuPvm.HasValue &&
             alkuPvm < v.VarattuLoppuPvm.Value && loppuPvm > v.VarattuAlkuPvm.Value);
