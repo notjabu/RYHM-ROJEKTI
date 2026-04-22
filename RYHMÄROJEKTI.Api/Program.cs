@@ -773,6 +773,27 @@ app.MapDelete("/api/lasku/{id:int}", async (int id) =>
 
 // ─── Palvelu ────────────────────────────────────────────────────────────────
 
+app.MapGet("/api/varaus-palvelut", async () =>
+{
+    await using var conn = await OpenDbAsync();
+    const string sql = """
+        SELECT vp.varaus_id, vp.palvelu_id, vp.lkm
+        FROM vn.varauksen_palvelut vp
+        """;
+    await using var cmd = new SqlCommand(sql, conn);
+    await using var rdr = await cmd.ExecuteReaderAsync();
+
+    var list = new List<VarausPalveluDto>();
+    while (await rdr.ReadAsync())
+    {
+        list.Add(new VarausPalveluDto(
+            Int(rdr, "palvelu_id"),
+            "",
+            Int(rdr, "lkm")));
+    }
+    return Results.Ok(list);
+});
+
 app.MapGet("/api/palvelu", async () =>
 {
     await using var conn = await OpenDbAsync();
@@ -781,6 +802,7 @@ app.MapGet("/api/palvelu", async () =>
                a.nimi AS aluenimi
         FROM vn.palvelu p
         LEFT JOIN vn.alue a ON a.alue_id = p.alue_id
+        WHERE p.is_deleted = 0
         ORDER BY p.nimi
         """;
     await using var cmd = new SqlCommand(sql, conn);
@@ -804,7 +826,11 @@ app.MapGet("/api/palvelu", async () =>
 app.MapGet("/api/palvelu/{id:int}", async (int id) =>
 {
     await using var conn = await OpenDbAsync();
-    const string sql = "SELECT alue_id, nimi, kuvaus, hinta, alv FROM vn.palvelu WHERE palvelu_id = @id";
+    const string sql = """
+        SELECT alue_id, nimi, kuvaus, hinta, alv 
+        FROM vn.palvelu 
+        WHERE palvelu_id = @id AND is_deleted = 0
+        """;
     await using var cmd = new SqlCommand(sql, conn);
     cmd.Parameters.AddWithValue("@id", id);
     await using var rdr = await cmd.ExecuteReaderAsync();
@@ -845,7 +871,7 @@ app.MapPut("/api/palvelu/{id:int}", async (int id, PalveluSaveDto dto) =>
         UPDATE vn.palvelu
         SET alue_id = @alueId, nimi = @nimi,
             kuvaus = @kuvaus, hinta = @hinta, alv = @alv
-        WHERE palvelu_id = @id
+        WHERE palvelu_id = @id AND is_deleted = 0
         """;
     await using var cmd = new SqlCommand(sql, conn);
     cmd.Parameters.AddWithValue("@alueId", (object?)dto.AlueId ?? DBNull.Value);
@@ -861,8 +887,27 @@ app.MapPut("/api/palvelu/{id:int}", async (int id, PalveluSaveDto dto) =>
 app.MapDelete("/api/palvelu/{id:int}", async (int id) =>
 {
     await using var conn = await OpenDbAsync();
-    const string sql = "DELETE FROM vn.palvelu WHERE palvelu_id = @id";
-    await using var cmd = new SqlCommand(sql, conn);
+
+    // Check if palvelu is used in any CURRENT/UPCOMING reservations
+    const string checkSql = """
+        SELECT COUNT(*) 
+        FROM vn.varauksen_palvelut vp
+        INNER JOIN vn.varaus v ON v.varaus_id = vp.varaus_id
+        WHERE vp.palvelu_id = @id 
+          AND v.varattu_loppupvm >= CAST(GETDATE() AS date)
+        """;
+    await using var checkCmd = new SqlCommand(checkSql, conn);
+    checkCmd.Parameters.AddWithValue("@id", id);
+    var count = (int)await checkCmd.ExecuteScalarAsync();
+
+    if (count > 0)
+    {
+        return Results.Conflict(new { error = "Palvelua ei voi poistaa, koska se on liitetty aktiivisiin varauksiin." });
+    }
+
+    // Soft delete: mark as deleted instead of removing from database
+    const string softDeleteSql = "UPDATE vn.palvelu SET is_deleted = 1 WHERE palvelu_id = @id";
+    await using var cmd = new SqlCommand(softDeleteSql, conn);
     cmd.Parameters.AddWithValue("@id", id);
     var rows = await cmd.ExecuteNonQueryAsync();
     return rows > 0 ? Results.Ok() : Results.NotFound();
@@ -875,8 +920,8 @@ app.MapGet("/api/tilasto", async () =>
     await using var conn = await OpenDbAsync();
     const string sql = """
         SELECT a.nimi AS aluenimi,
-               (SELECT COUNT(*) FROM vn.mokki   m WHERE m.alue_id = a.alue_id)    AS maara,
-               (SELECT COUNT(*) FROM vn.palvelu p WHERE p.alue_id = a.alue_id)    AS maara2
+               (SELECT COUNT(*) FROM vn.mokki m WHERE m.alue_id = a.alue_id) AS maara,
+               (SELECT COUNT(*) FROM vn.palvelu p WHERE p.alue_id = a.alue_id AND p.is_deleted = 0) AS maara2
         FROM vn.alue a
         ORDER BY a.nimi
         """;

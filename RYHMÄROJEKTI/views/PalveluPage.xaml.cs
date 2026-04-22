@@ -4,6 +4,7 @@ namespace RYHMÄROJEKTI.views
     using System.Collections.ObjectModel;
     using System.ComponentModel;
     using System.Globalization;
+    using System.Linq;
     using System.Net.Http.Json;
     using System.Runtime.CompilerServices;
     using System.Windows.Input;
@@ -102,6 +103,13 @@ namespace RYHMÄROJEKTI.views
                         return;
                     }
 
+                    if (ValittuPalvelu.VarausCount > 0)
+                    {
+                        await Application.Current.MainPage.DisplayAlert("Varoitus",
+                            $"Palvelua \"{ValittuPalvelu.Nimi}\" ei voi poistaa, koska se on liitetty varauksiin.", "OK");
+                        return;
+                    }
+
                     bool ok = await Application.Current.MainPage.DisplayAlert(
                         "Vahvista", $"Poistetaanko palvelu \"{ValittuPalvelu.Nimi}\"?", "Kyllä", "Ei");
                     if (!ok) return;
@@ -118,6 +126,7 @@ namespace RYHMÄROJEKTI.views
                     {
                         await Application.Current.MainPage.DisplayAlert(
                             "Virhe", "Poisto epäonnistui: " + ex.Message, "OK");
+                        return;
                     }
 
                     Palvelut.Remove(ValittuPalvelu);
@@ -143,9 +152,31 @@ namespace RYHMÄROJEKTI.views
                             Sijainti = p.AlueNimi ?? string.Empty,
                             Kuvaus = p.Kuvaus ?? string.Empty,
                             Hinta = p.Hinta,
-                            Alv = p.Alv
+                            Alv = p.Alv,
+                            VarausCount = 0
                         });
                     }
+
+                    // Load varaus usage counts
+                    try
+                    {
+                        var varausPalveluList = await ApiClient.Http.GetFromJsonAsync<List<VarausPalveluDto>>("/api/varaus-palvelut");
+                        if (varausPalveluList != null)
+                        {
+                            var counts = varausPalveluList
+                                .GroupBy(vp => vp.PalveluId)
+                                .ToDictionary(g => g.Key, g => g.Count());
+
+                            foreach (var p in Palvelut)
+                            {
+                                if (p.Id.HasValue && counts.TryGetValue(p.Id.Value, out var c))
+                                    p.VarausCount = c;
+                                else
+                                    p.VarausCount = 0;
+                            }
+                        }
+                    }
+                    catch (Exception) { /* ignore varaus-palvelut load errors */ }
                 }
                 catch (Exception ex)
                 {
@@ -169,6 +200,7 @@ namespace RYHMÄROJEKTI.views
 
             public double Hinta { get; set; }
             public double Alv { get; set; }
+            public int VarausCount { get; set; }
 
             public string HintaFormatted => Hinta.ToString("0.##", CultureInfo.CurrentCulture);
             public string AlvFormatted => $"{Alv.ToString("0.##", CultureInfo.CurrentCulture)}%";
