@@ -103,11 +103,13 @@ namespace RYHMÄROJEKTI.views
                         return;
                     }
 
+                    // If there are current/upcoming reservations, show warning first
                     if (ValittuPalvelu.VarausCount > 0)
                     {
-                        await Application.Current.MainPage.DisplayAlert("Varoitus",
-                            $"Palvelua \"{ValittuPalvelu.Nimi}\" ei voi poistaa, koska se on liitetty varauksiin.", "OK");
-                        return;
+                        bool proceedAnyway = await Application.Current.MainPage.DisplayAlert("Varoitus",
+                            $"Palvelu \"{ValittuPalvelu.Nimi}\" on liitetty {ValittuPalvelu.VarausCount} aktiiviseen varaukseen. Haluatko silti poistaa sen?", "Kyllä", "Ei");
+                        if (!proceedAnyway) return;
+                        
                     }
 
                     bool ok = await Application.Current.MainPage.DisplayAlert(

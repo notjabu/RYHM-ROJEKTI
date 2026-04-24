@@ -710,7 +710,12 @@ app.MapGet("/api/lasku", async () =>
 app.MapGet("/api/lasku/{id:int}", async (int id) =>
 {
     await using var conn = await OpenDbAsync();
-    const string sql = "SELECT varaus_id, summa, alv, maksettu FROM vn.lasku WHERE lasku_id = @id";
+    const string sql = """
+        SELECT l.varaus_id, l.summa, l.alv, l.maksettu, v.asiakas_id
+        FROM vn.lasku l
+        LEFT JOIN vn.varaus v ON v.varaus_id = l.varaus_id
+        WHERE l.lasku_id = @id
+        """;
     await using var cmd = new SqlCommand(sql, conn);
     cmd.Parameters.AddWithValue("@id", id);
     await using var rdr = await cmd.ExecuteReaderAsync();
