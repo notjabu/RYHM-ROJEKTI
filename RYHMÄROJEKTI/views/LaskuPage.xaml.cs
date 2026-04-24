@@ -140,7 +140,8 @@ public LaskuPage()
                     container.Page(page =>
                     {
                         page.Margin(50);
-                        page.Header().Text("VILLAGE NEWBIES - LASKU").FontSize(20).SemiBold().FontColor(QuestPDF.Helpers.Colors.Blue.Medium);
+                        page.Header().Text("VILLAGE NEWBIES - LASKU")
+                            .FontSize(20).SemiBold().FontColor(QuestPDF.Helpers.Colors.Blue.Medium);
 
                         page.Content().Column(col =>
                         {
@@ -149,11 +150,19 @@ public LaskuPage()
                             col.Item().Text($"Asiakkaan tunnus: {ValittuLasku.AsiakasID}");
                             col.Item().Text($"Asiakkaan nimi: {ValittuLasku.AsiakasNimi}");
                             col.Item().Text($"Mökki: {ValittuLasku.MokkiNimi}");
-                            col.Item().Text($"Ajalta: {ValittuLasku.VarattuAlkuPvm} - {ValittuLasku.VarattuLoppuPvm}");
+                            col.Item().Text($"Ajalta: {ValittuLasku.VarattuAlkuPvm:dd.MM.yyyy} - {ValittuLasku.VarattuLoppuPvm:dd.MM.yyyy}");
+
                             col.Item().LineHorizontal(1);
+
                             col.Item().Text($"Summa: {ValittuLasku.Summa:F2} €");
                             col.Item().Text($"ALV: {ValittuLasku.Alv}%");
                             col.Item().Text($"YHTEENSÄ: {ValittuLasku.Summa:F2} €").FontSize(16).Bold();
+
+                            col.Item().PaddingTop(30).Text("MAKSUYHTEYSTIEDOT").Bold().Underline();
+                            col.Item().Text("Saaja: Village Newbies Oy");
+                            col.Item().Text("IBAN: FI12 3456 7890 1234 56");
+                            col.Item().Text("BIC: OKOYFIHH");
+                            col.Item().Text("Eräpäivä: 14 vuorokautta laskun päiväyksestä");
                         });
 
                         page.Footer().AlignCenter().Text(x =>

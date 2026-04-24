@@ -21,7 +21,6 @@ namespace RYHMÄROJEKTI.ViewModels
         }
 
         public ICommand LuoPdfLaskuCommand { get; }
-        public ICommand LahetaSahkopostiCommand { get; }
 
         public LaskuViewModel()
         {
@@ -29,7 +28,6 @@ namespace RYHMÄROJEKTI.ViewModels
             QuestPDF.Settings.License = LicenseType.Community;
 
             LuoPdfLaskuCommand = new Command(async () => await GeneroiLaskuPdf());
-            LahetaSahkopostiCommand = new Command(async () => await LahetaLaskuSahkopostilla());
         }
 
         private async Task GeneroiLaskuPdf()
