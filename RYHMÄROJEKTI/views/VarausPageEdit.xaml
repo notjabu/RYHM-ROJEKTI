@@ -30,6 +30,14 @@
                     HorizontalOptions="FillAndExpand"
                     SelectedIndexChanged="OnMokkiPicker_Changed" />
 
+            <!-- Opt in to show external services -->
+            <HorizontalStackLayout Spacing="8">
+                <CheckBox x:Name="UlkopalvelutCheckBox"
+                          VerticalOptions="Center"
+                          CheckedChanged="OnUlkopalvelutToggled" />
+                <Label Text="Näytä myös alueen ulkopuoliset palvelut" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
             <!-- Mökin olemassa olevat varaukset -->
             <Frame x:Name="VarauksetFrame"
                    IsVisible="False"

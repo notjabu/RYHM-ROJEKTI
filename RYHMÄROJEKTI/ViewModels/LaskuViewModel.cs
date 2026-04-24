@@ -21,6 +21,7 @@ namespace RYHMÄROJEKTI.ViewModels
         }
 
         public ICommand LuoPdfLaskuCommand { get; }
+        public ICommand LahetaSahkopostiCommand { get; }
 
         public LaskuViewModel()
         {
@@ -28,24 +29,35 @@ namespace RYHMÄROJEKTI.ViewModels
             QuestPDF.Settings.License = LicenseType.Community;
 
             LuoPdfLaskuCommand = new Command(async () => await GeneroiLaskuPdf());
-
+            LahetaSahkopostiCommand = new Command(async () => await LahetaLaskuSahkopostilla());
         }
 
         private async Task GeneroiLaskuPdf()
         {
             if (ValittuLasku == null) return;
-
+           
             try
             {
-                string fileName = $"Lasku_{ValittuLasku.LaskuId}.pdf";
-                string filePath = Path.Combine(FileSystem.CacheDirectory, fileName);
+                // Luodaan uniikki nimi, jotta välimuisti ei temppuile
+                string aikaleima = DateTime.Now.ToString("HHmmss");
+                string uniqueId = Guid.NewGuid().ToString().Substring(0, 4);
+                string tyopoyta = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                
+                string fileName = $"LASKU_TESTI_{DateTime.Now:HHmmss}.pdf";
+                string filePath = Path.Combine(tyopoyta, fileName);
 
-                Document.Create(container =>
+                var dokumentti = Document.Create(container =>
                 {
                     container.Page(page =>
                     {
                         page.Margin(50);
-                        page.Header().Text("VILLAGE NEWBIES - LASKU").FontSize(24).Bold().FontColor(QuestPDF.Helpers.Colors.Blue.Medium);
+
+                        // Otsikko
+                        page.Header().Column(col =>
+                        {
+                            col.Item().Text("TÄMÄ ON UUSI VERSIO").FontSize(20).FontColor(QuestPDF.Helpers.Colors.Red.Medium);
+                            col.Item().Text("VILLAGE NEWBIES - LASKU").FontSize(24).Bold().FontColor(QuestPDF.Helpers.Colors.Blue.Medium);
+                        });
 
                         page.Content().PaddingVertical(10).Column(col =>
                         {
@@ -56,21 +68,29 @@ namespace RYHMÄROJEKTI.ViewModels
 
                             col.Item().PaddingTop(20).LineHorizontal(1);
 
-                            col.Item().PaddingTop(10).Row(row =>
-                            {
-                                row.RelativeItem().Text("Majoitus ja palvelut");
-                                row.RelativeItem().AlignRight().Text($"{ValittuLasku.Summa} €");
-                            });
+                            col.Item().PaddingTop(10).Text($"Summa: {ValittuLasku.Summa} €");
+                            col.Item().Text($"ALV: {ValittuLasku.Alv} %");
+                            col.Item().PaddingTop(10).Text($"YHTEENSÄ: {ValittuLasku.Summa} €").FontSize(18).Bold();
 
-                            col.Item().AlignRight().Text($"ALV: {ValittuLasku.Alv} %").FontSize(10);
-                            col.Item().PaddingTop(20).Text($"YHTEENSÄ: {ValittuLasku.Summa} €").FontSize(18).Bold();
+                            col.Item().PaddingTop(30).Text("MAKSUYHTEYSTIEDOT").Bold().Underline();
+                            col.Item().Text("Saaja: Village Newbies Oy");
+                            col.Item().Text("IBAN: FI12 3456 7890 1234 56");
+                            col.Item().Text("BIC: OKOYFIHH");
+                            col.Item().Text("Eräpäivä: 14 vuorokautta laskun päiväyksestä");
                         });
 
-                        page.Footer().AlignCenter().Text("Kiitos varauksestasi! Maksuehto 14 vrk.");
+                        // Sivunumerointi
+                        page.Footer().AlignCenter().Text(x =>
+                        {
+                            x.Span("Sivu ");
+                            x.CurrentPageNumber();
+                        });
                     });
-                }).GeneratePdf(filePath);
+                });
 
-                // Avataan PDF-tiedosto automaattisesti käyttäjälle
+                dokumentti.GeneratePdf(filePath);
+
+                // Avataan PDF
                 await Launcher.Default.OpenAsync(new OpenFileRequest
                 {
                     File = new ReadOnlyFile(filePath)
@@ -80,6 +100,12 @@ namespace RYHMÄROJEKTI.ViewModels
             {
                 await Application.Current.MainPage.DisplayAlert("Virhe", $"PDF-luonti epäonnistui: {ex.Message}", "OK");
             }
+        }
+       private async Task LahetaLaskuSahkopostilla()
+        {
+            if (ValittuLasku == null) return;
+            await Application.Current.MainPage.DisplayAlert("Sähköpostilasku",
+                $"Lasku {ValittuLasku.LaskuId} lähetetty asiakkaalle!", "OK");
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

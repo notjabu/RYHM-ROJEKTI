@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
+using System.Linq;
 
 namespace RYHMÄROJEKTI.views;
 
@@ -75,7 +76,7 @@ public partial class VarausPageEdit : ContentPage
                 AsiakasPicker.Items.Add($"{a.Etunimi} {a.Sukunimi}".Trim());
             }
 
-            // If we just came back from AsiakasPageEdit, select the last added asiakas
+            // Jos tultu AsiakasPageEdit:ista, valitsee viimeisimman lisatyn asiakkaan
             if (_asiakkaat.Count > 0)
                 AsiakasPicker.SelectedIndex = _asiakkaat.Count - 1;
         }
@@ -152,7 +153,7 @@ public partial class VarausPageEdit : ContentPage
                 return;
             }
 
-            // Select asiakas
+            // Valitse asiakas
             for (int i = 0; i < _asiakkaat.Count; i++)
             {
                 if (_asiakkaat[i].Id == dto.AsiakasId)
@@ -162,7 +163,7 @@ public partial class VarausPageEdit : ContentPage
                 }
             }
 
-            // Select mökki (this also triggers palvelut filtering via OnMokkiPicker_Changed)
+            // Valitse mokki
             for (int i = 0; i < _mokit.Count; i++)
             {
                 if (_mokit[i].Id == dto.MokkiId)
@@ -172,7 +173,8 @@ public partial class VarausPageEdit : ContentPage
                 }
             }
 
-            // Preselect palvelut that were on this varaus
+            // Preselect palvelut jotka ovat tässä varauksessa.
+            // If some services are not in the current filtered list, add them so they remain visible.
             if (dto.Palvelut != null)
             {
                 foreach (var vp in dto.Palvelut)
@@ -183,10 +185,27 @@ public partial class VarausPageEdit : ContentPage
                         match.IsSelected = true;
                         match.Lkm = vp.Lkm;
                     }
+                    else
+                    {
+                        // Find service in all services and add it so the user can see/edit it
+                        var pDto = _kaikkiPalvelut.FirstOrDefault(x => x.Id == vp.PalveluId);
+                        if (pDto != null)
+                        {
+                            var added = new PalveluSelection
+                            {
+                                PalveluId = pDto.Id ?? 0,
+                                Nimi = pDto.Nimi,
+                                Hinta = pDto.Hinta,
+                                IsSelected = true,
+                                Lkm = vp.Lkm
+                            };
+                            _palvelut.Add(added);
+                        }
+                    }
                 }
             }
 
-            // Set dates
+            // Syötä päivät
             if (dto.VarattuAlkuPvm.HasValue)
             {
                 AlkuPvmPicker.MinimumDate = dto.VarattuAlkuPvm.Value < DateTime.Today
@@ -199,7 +218,7 @@ public partial class VarausPageEdit : ContentPage
                 LoppuPvmPicker.Date = dto.VarattuLoppuPvm.Value;
             }
 
-            // Set vahvistus
+            // Syötä vahvistus
             VahvistaCheckBox.IsChecked = dto.VahvistusPvm.HasValue;
         }
         catch (Exception ex)
@@ -219,7 +238,12 @@ public partial class VarausPageEdit : ContentPage
         if (idx >= 0 && idx < _mokit.Count)
         {
             var alueId = _mokit[idx].AlueId;
-            FilterPalvelutByAlue(alueId);
+            // If the checkbox is checked, show all services (include external). Otherwise show only this area.
+            if (UlkopalvelutCheckBox.IsChecked)
+                FilterPalvelutByAlue(null);
+            else
+                FilterPalvelutByAlue(alueId);
+
             await LoadMokkiVarauksetAsync(_mokit[idx].Id ?? 0);
         }
         else
@@ -237,7 +261,6 @@ public partial class VarausPageEdit : ContentPage
             var list = await ApiClient.Http.GetFromJsonAsync<List<MokkiVarausDto>>($"/api/varaus/mokki/{mokkiId}");
             _mokkiVaraukset = list ?? new();
 
-            // Exclude the reservation currently being edited
             if (_varausId.HasValue)
                 _mokkiVaraukset.RemoveAll(v => v.VarausId == _varausId.Value);
 
@@ -273,6 +296,25 @@ public partial class VarausPageEdit : ContentPage
             LoppuPvmPicker.Date = minLoppu;
     }
 
+    // Checkbox: include external-area services
+    private void OnUlkopalvelutToggled(object sender, CheckedChangedEventArgs e)
+    {
+        var idx = MokkiPicker.SelectedIndex;
+        if (idx >= 0 && idx < _mokit.Count)
+        {
+            var alueId = _mokit[idx].AlueId;
+            FilterPalvelutByAlue(e.Value ? null : alueId);
+        }
+        else
+        {
+            // No cottage selected: if checked, show all; if not, clear list
+            if (e.Value)
+                FilterPalvelutByAlue(null);
+            else
+                _palvelut.Clear();
+        }
+    }
+
     // ── Cancel ──────────────────────────────────────────────────────────
 
     private async void OnCancelClicked(object sender, EventArgs e)
@@ -285,7 +327,7 @@ public partial class VarausPageEdit : ContentPage
 
     private async void OnSaveClicked(object sender, EventArgs e)
     {
-        // Validate asiakas
+        // Validioi asiakas
         var asiakasIdx = AsiakasPicker.SelectedIndex;
         if (asiakasIdx < 0 || asiakasIdx >= _asiakkaat.Count)
         {
@@ -293,7 +335,7 @@ public partial class VarausPageEdit : ContentPage
             return;
         }
 
-        // Validate mökki
+        // Validioi mökki
         var mokkiIdx = MokkiPicker.SelectedIndex;
         if (mokkiIdx < 0 || mokkiIdx >= _mokit.Count)
         {
@@ -316,7 +358,7 @@ public partial class VarausPageEdit : ContentPage
             return;
         }
 
-        // Check for overlapping reservations
+        // Tarkistaa päällekkäis varaukset
         var overlap = _mokkiVaraukset.FirstOrDefault(v =>
             v.VarattuAlkuPvm.HasValue && v.VarattuLoppuPvm.HasValue &&
             alkuPvm < v.VarattuLoppuPvm.Value && loppuPvm > v.VarattuAlkuPvm.Value);
