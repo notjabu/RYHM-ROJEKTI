@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
+using System.Linq;
 
 namespace RYHMÄROJEKTI.views;
 
@@ -172,7 +173,8 @@ public partial class VarausPageEdit : ContentPage
                 }
             }
 
-            // Preselect palvelut jotka ovat tassa varauksessa
+            // Preselect palvelut jotka ovat tässä varauksessa.
+            // If some services are not in the current filtered list, add them so they remain visible.
             if (dto.Palvelut != null)
             {
                 foreach (var vp in dto.Palvelut)
@@ -183,10 +185,27 @@ public partial class VarausPageEdit : ContentPage
                         match.IsSelected = true;
                         match.Lkm = vp.Lkm;
                     }
+                    else
+                    {
+                        // Find service in all services and add it so the user can see/edit it
+                        var pDto = _kaikkiPalvelut.FirstOrDefault(x => x.Id == vp.PalveluId);
+                        if (pDto != null)
+                        {
+                            var added = new PalveluSelection
+                            {
+                                PalveluId = pDto.Id ?? 0,
+                                Nimi = pDto.Nimi,
+                                Hinta = pDto.Hinta,
+                                IsSelected = true,
+                                Lkm = vp.Lkm
+                            };
+                            _palvelut.Add(added);
+                        }
+                    }
                 }
             }
 
-            // Syota paivat
+            // Syötä päivät
             if (dto.VarattuAlkuPvm.HasValue)
             {
                 AlkuPvmPicker.MinimumDate = dto.VarattuAlkuPvm.Value < DateTime.Today
@@ -199,7 +218,7 @@ public partial class VarausPageEdit : ContentPage
                 LoppuPvmPicker.Date = dto.VarattuLoppuPvm.Value;
             }
 
-            // Syota vahvistus
+            // Syötä vahvistus
             VahvistaCheckBox.IsChecked = dto.VahvistusPvm.HasValue;
         }
         catch (Exception ex)
@@ -219,7 +238,12 @@ public partial class VarausPageEdit : ContentPage
         if (idx >= 0 && idx < _mokit.Count)
         {
             var alueId = _mokit[idx].AlueId;
-            FilterPalvelutByAlue(alueId);
+            // If the checkbox is checked, show all services (include external). Otherwise show only this area.
+            if (UlkopalvelutCheckBox.IsChecked)
+                FilterPalvelutByAlue(null);
+            else
+                FilterPalvelutByAlue(alueId);
+
             await LoadMokkiVarauksetAsync(_mokit[idx].Id ?? 0);
         }
         else
@@ -270,6 +294,25 @@ public partial class VarausPageEdit : ContentPage
         LoppuPvmPicker.MinimumDate = minLoppu;
         if (LoppuPvmPicker.Date < minLoppu)
             LoppuPvmPicker.Date = minLoppu;
+    }
+
+    // Checkbox: include external-area services
+    private void OnUlkopalvelutToggled(object sender, CheckedChangedEventArgs e)
+    {
+        var idx = MokkiPicker.SelectedIndex;
+        if (idx >= 0 && idx < _mokit.Count)
+        {
+            var alueId = _mokit[idx].AlueId;
+            FilterPalvelutByAlue(e.Value ? null : alueId);
+        }
+        else
+        {
+            // No cottage selected: if checked, show all; if not, clear list
+            if (e.Value)
+                FilterPalvelutByAlue(null);
+            else
+                _palvelut.Clear();
+        }
     }
 
     // ── Cancel ──────────────────────────────────────────────────────────
