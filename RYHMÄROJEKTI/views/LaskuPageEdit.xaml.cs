@@ -16,6 +16,7 @@ public partial class LaskuPageEdit : ContentPage
 
     private readonly List<VarausDto> _varaukset = new();
     private List<PalveluDto> _kaikkiPalvelut = new();
+  
     private double _baseSumma; // nights*mökki + palvelut
 
     public string LaskuId
@@ -63,7 +64,8 @@ public partial class LaskuPageEdit : ContentPage
     {
         try
         {
-            var list = await ApiClient.Http.GetFromJsonAsync<List<PalveluDto>>("/api/palvelu");
+            // Use an endpoint that includes soft-deleted records
+            var list = await ApiClient.Http.GetFromJsonAsync<List<PalveluDto>>("/api/palvelu/all");
             _kaikkiPalvelut = list ?? new();
         }
         catch

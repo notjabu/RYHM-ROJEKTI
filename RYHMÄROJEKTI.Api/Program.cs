@@ -828,6 +828,35 @@ app.MapGet("/api/palvelu", async () =>
     return Results.Ok(list);
 });
 
+//TÄMÄ LISÄTTY ETTÄ SOFT DELETE PALVELUIDEN HINNAT NÄKYVÄT
+app.MapGet("/api/palvelu/all", async () =>
+{
+    await using var conn = await OpenDbAsync();
+    const string sql = """
+        SELECT p.palvelu_id, p.alue_id, p.nimi, p.kuvaus, p.hinta, p.alv,
+               a.nimi AS aluenimi
+        FROM vn.palvelu p
+        LEFT JOIN vn.alue a ON a.alue_id = p.alue_id
+        ORDER BY p.nimi
+        """;
+    await using var cmd = new SqlCommand(sql, conn);
+    await using var rdr = await cmd.ExecuteReaderAsync();
+
+    var list = new List<PalveluDto>();
+    while (await rdr.ReadAsync())
+    {
+        list.Add(new PalveluDto(
+            NullInt(rdr, "palvelu_id"),
+            NullInt(rdr, "alue_id"),
+            Str(rdr, "nimi"),
+            Str(rdr, "kuvaus"),
+            Dbl(rdr, "hinta"),
+            Dbl(rdr, "alv"),
+            Str(rdr, "aluenimi")));
+    }
+    return Results.Ok(list);
+});
+
 app.MapGet("/api/palvelu/{id:int}", async (int id) =>
 {
     await using var conn = await OpenDbAsync();
