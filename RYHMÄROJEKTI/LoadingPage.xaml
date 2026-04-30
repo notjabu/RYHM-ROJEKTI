@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RYHMÄROJEKTI.LoadingPage"
+             Title="Ladataan"
+             BackgroundColor="#2c3e50">
+
+    <Grid RowDefinitions="*" ColumnDefinitions="*" Padding="20">
+        <VerticalStackLayout Grid.Row="0" Grid.Column="0" 
+                            VerticalOptions="Center" 
+                            HorizontalOptions="Center"
+                            Spacing="30">
+
+            <!-- Spinner Animation -->
+            <ActivityIndicator IsRunning="True" 
+                             IsVisible="True" 
+                             Color="#3498db"
+                             Scale="2"/>
+
+            <!-- Loading Message -->
+            <Label Text="Tietokanta aukeaa..."
+                   FontSize="20"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   FontAttributes="Bold"/>
+
+            <!-- Status Message (Updated during loading) -->
+            <Label x:Name="StatusLabel"
+                   Text="Yhdistetään palvelimeen..."
+                   FontSize="14"
+                   TextColor="#bdc3c7"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"/>
+
+        </VerticalStackLayout>
+    </Grid>
+
+</ContentPage>

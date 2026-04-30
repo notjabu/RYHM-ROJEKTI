@@ -11,6 +11,20 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
+// Health check endpoint to verify database connectivity
+app.MapGet("/api/health", async () =>
+{
+    try
+    {
+        await using var conn = await OpenDbAsync();
+        return Results.Ok(new { status = "healthy" });
+    }
+    catch
+    {
+        return Results.StatusCode(503);
+    }
+});
+
 // Helper to open a new SqlConnection from config.
 async Task<SqlConnection> OpenDbAsync()
 {
