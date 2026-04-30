@@ -168,8 +168,18 @@ public AsiakasPage()
 					{
 						if (asiakas.Id.HasValue)
 						{
-							var resp = await ApiClient.Http.DeleteAsync($"/api/asiakas/{asiakas.Id.Value}");
-							resp.EnsureSuccessStatusCode();
+							var response = await ApiClient.Http.DeleteAsync($"/api/asiakas/{asiakas.Id.Value}");
+
+							if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+							{
+								await Application.Current.MainPage.DisplayAlert("Virhe", "Asiakasta ei voi poistaa, koska sillä on aktiivisia varauksia. Poista varaukset ensin.", "OK");
+								return;
+							}
+							else if (response.IsSuccessStatusCode)
+							{
+								await Application.Current.MainPage.DisplayAlert("Onnistui", "Asiakas poistettu onnistuneesti.", "OK");
+							}
+							response.EnsureSuccessStatusCode();
 						}
 					}
 					catch (Exception ex)

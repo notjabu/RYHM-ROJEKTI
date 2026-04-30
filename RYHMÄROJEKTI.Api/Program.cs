@@ -278,6 +278,20 @@ app.MapPut("/api/mokki/{id:int}", async (int id, MokkiSaveDto dto) =>
 app.MapDelete("/api/mokki/{id:int}", async (int id) =>
 {
     await using var conn = await OpenDbAsync();
+
+    // Check if mokki has any varaus records
+    const string checkSql = """
+        SELECT COUNT(*) FROM vn.varaus WHERE mokki_id = @id
+        """;
+    await using var checkCmd = new SqlCommand(checkSql, conn);
+    checkCmd.Parameters.AddWithValue("@id", id);
+    var count = (int)await checkCmd.ExecuteScalarAsync();
+
+    if (count > 0)
+    {
+        return Results.Conflict(new { error = "Mökkiä ei voi poistaa, koska sillä on aktiivisia varauksia. Poista varaukset ensin." });
+    }
+
     const string sql = "DELETE FROM vn.mokki WHERE mokki_id = @id";
     await using var cmd = new SqlCommand(sql, conn);
     cmd.Parameters.AddWithValue("@id", id);
@@ -384,6 +398,20 @@ app.MapPut("/api/asiakas/{id:int}", async (int id, AsiakasSaveDto dto) =>
 app.MapDelete("/api/asiakas/{id:int}", async (int id) =>
 {
     await using var conn = await OpenDbAsync();
+
+    // Check if asiakas has any varaus records
+    const string checkSql = """
+        SELECT COUNT(*) FROM vn.varaus WHERE asiakas_id = @id
+        """;
+    await using var checkCmd = new SqlCommand(checkSql, conn);
+    checkCmd.Parameters.AddWithValue("@id", id);
+    var count = (int)await checkCmd.ExecuteScalarAsync();
+
+    if (count > 0)
+    {
+        return Results.Conflict(new { error = "Asiakasta ei voi poistaa, koska sillä on aktiivisia varauksia. Poista varaukset ensin." });
+    }
+
     const string sql = "DELETE FROM vn.asiakas WHERE asiakas_id = @id";
     await using var cmd = new SqlCommand(sql, conn);
     cmd.Parameters.AddWithValue("@id", id);

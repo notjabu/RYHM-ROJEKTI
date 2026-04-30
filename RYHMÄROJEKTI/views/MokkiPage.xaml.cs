@@ -114,6 +114,13 @@ public partial class MokkiPage : ContentPage
 					if (ValittuMokki.Id.HasValue)
 					{
 						var resp = await ApiClient.Http.DeleteAsync($"/api/mokki/{ValittuMokki.Id.Value}");
+
+						if (resp.StatusCode == System.Net.HttpStatusCode.Conflict)
+						{
+							await Application.Current.MainPage.DisplayAlert("Virhe", "Mökkiä ei voi poistaa, koska sillä on aktiivisia varauksia. Poista varaukset ensin.", "OK");
+							return;
+						}
+
 						resp.EnsureSuccessStatusCode();
 					}
 				}
@@ -121,6 +128,7 @@ public partial class MokkiPage : ContentPage
 				{
 					await Application.Current.MainPage.DisplayAlert(
 						"Virhe", "Poisto epäonnistui: " + ex.Message, "OK");
+					return;
 				}
 
 				Mokit.Remove(ValittuMokki);
