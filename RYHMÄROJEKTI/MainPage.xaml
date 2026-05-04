@@ -24,15 +24,20 @@
                     <Label Text="Varaustilanteen tarkastelu" FontAttributes="Bold" TextColor="Black"  FontSize="16"/>
                     <Label x:Name="ModeLabel" Text="Näytetään tämänhetkinen tilanne" FontSize="13" TextColor="#555"/>
 
-                    <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto, Auto, Auto"  ColumnSpacing="8" RowSpacing="4">
+                    <Grid ColumnDefinitions="Auto,*,Auto,*,Auto,*" RowDefinitions="Auto, Auto"  ColumnSpacing="8" RowSpacing="4">
                         <Label Grid.Column="0" Grid.Row="0"  Text="Alku:" VerticalOptions="Center" TextColor="Black"/>
                         <DatePicker x:Name="AlkuDatePicker" Grid.Column="1" Grid.Row="0"
                                     Format="dd.MM.yyyy"
-                                    DateSelected="OnDateSelected" TextColor="Black"/>
+                                    DateSelected="OnDateSelected" TextColor="Black" BackgroundColor="LightGray"/>
                         <Label Grid.Column="0" Grid.Row="1" Text="Loppu:" TextColor="Black" VerticalOptions="Center"/>
                         <DatePicker x:Name="LoppuDatePicker" Grid.Column="1" Grid.Row="1"
                                     Format="dd.MM.yyyy"
-                                    DateSelected="OnDateSelected" TextColor="Black"/>
+                                    DateSelected="OnDateSelected" TextColor="Black" BackgroundColor="LightGray" />
+
+                        <Label Grid.Column="2" Grid.Row="0" Text="Alue:" VerticalOptions="Center" TextColor="Black"/>
+                        <Picker x:Name="AluePickerSelector" Grid.Column="3" Grid.Row="0"
+                                TextColor="Black" BackgroundColor="LightGray"
+                                SelectedIndexChanged="OnAlueSelected"/>
                     </Grid>
 
                     <HorizontalStackLayout Spacing="10">

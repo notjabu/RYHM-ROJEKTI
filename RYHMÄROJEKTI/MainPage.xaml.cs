@@ -10,6 +10,8 @@ public partial class MainPage : ContentPage
 {
     private List<VarausDto> _varaukset = new();
     private bool _customRange;
+    private List<(int? id, string nimi)> _alueet = new();
+    private int? _selectedAlueId = null;
 
     public MainPage()
     {
@@ -20,6 +22,7 @@ public partial class MainPage : ContentPage
     {
         base.OnAppearing();
         await LoadVarauksetAsync();
+        await LoadAlueetAsync();
         ShowNykytilanne();
     }
 
@@ -37,9 +40,52 @@ public partial class MainPage : ContentPage
         }
     }
 
+    private async Task LoadAlueetAsync()
+    {
+        try
+        {
+            var list = await ApiClient.Http.GetFromJsonAsync<List<AlueDto>>("/api/alue");
+            if (list != null)
+            {
+                _alueet = new List<(int?, string)> { (null, "Kaikki alueet") };
+                foreach (var alue in list.OrderBy(a => a.Nimi))
+                {
+                    _alueet.Add((alue.Id, alue.Nimi));
+                }
+
+                // Update picker items - access control here after InitializeComponent
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    var picker = this.FindByName<Picker>("AluePickerSelector");
+                    if (picker != null)
+                    {
+                        picker.ItemsSource = _alueet.Select(a => a.nimi).ToList();
+                        picker.SelectedIndex = 0;
+                    }
+                });
+
+                _selectedAlueId = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Virhe", "Alueiden lataus epäonnistui: " + ex.Message, "OK");
+        }
+    }
+
     private void OnDateSelected(object sender, DateChangedEventArgs e)
     {
         // Only informational; actual filtering happens on "Hae" click.
+    }
+
+    private void OnAlueSelected(object sender, EventArgs e)
+    {
+        var picker = sender as Picker;
+        if (picker != null && picker.SelectedIndex >= 0 && picker.SelectedIndex < _alueet.Count)
+        {
+            _selectedAlueId = _alueet[picker.SelectedIndex].id;
+            ShowNykytilanne();
+        }
     }
 
     private async void OnHaeClicked(object sender, EventArgs e)
@@ -79,6 +125,12 @@ public partial class MainPage : ContentPage
             v.VarattuAlkuPvm.HasValue && v.VarattuLoppuPvm.HasValue &&
             v.VarattuAlkuPvm.Value.Date <= loppu &&
             v.VarattuLoppuPvm.Value.Date >= alku).ToList();
+
+        // Filter by selected area if not "Kaikki alueet"
+        if (_selectedAlueId.HasValue)
+        {
+            matching = matching.Where(v => v.AlueId == _selectedAlueId).ToList();
+        }
 
         // -- Mökit --
         var mokkiRows = matching

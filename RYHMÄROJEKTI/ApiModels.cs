@@ -82,6 +82,8 @@ public class VarausDto
     public DateTime? VahvistusPvm { get; set; }
     public DateTime? VarattuAlkuPvm { get; set; }
     public DateTime? VarattuLoppuPvm { get; set; }
+    public int? AlueId { get; set; }
+    public string AluenNimi { get; set; } = "";
     public List<VarausPalveluDto> Palvelut { get; set; } = new();
 }
 

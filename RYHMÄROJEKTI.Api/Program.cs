@@ -470,10 +470,12 @@ app.MapGet("/api/varaus", async () =>
                v.varattu_pvm, v.vahvistus_pvm,
                v.varattu_alkupvm, v.varattu_loppupvm,
                a.etunimi, a.sukunimi,
-               m.mokkinimi
+               m.mokkinimi, m.alue_id,
+               al.nimi as aluen_nimi
         FROM vn.varaus v
         LEFT JOIN vn.asiakas a ON a.asiakas_id = v.asiakas_id
         LEFT JOIN vn.mokki m ON m.mokki_id = v.mokki_id
+        LEFT JOIN vn.alue al ON al.alue_id = m.alue_id
         ORDER BY v.varattu_alkupvm DESC
         """;
     await using var cmd = new SqlCommand(sql, conn);
@@ -487,6 +489,8 @@ app.MapGet("/api/varaus", async () =>
             NullInt(rdr, "asiakas_id"),
             NullInt(rdr, "mokki_id"),
             Str(rdr, "mokkinimi"),
+            NullInt(rdr, "alue_id"),
+            Str(rdr, "aluen_nimi"),
             Str(rdr, "etunimi"),
             Str(rdr, "sukunimi"),
             NullDt(rdr, "varattu_pvm"),
@@ -579,10 +583,12 @@ app.MapGet("/api/varaus/{id:int}", async (int id) =>
                v.varattu_pvm, v.vahvistus_pvm,
                v.varattu_alkupvm, v.varattu_loppupvm,
                a.etunimi, a.sukunimi,
-               m.mokkinimi
+               m.mokkinimi, m.alue_id,
+               al.nimi as aluen_nimi
         FROM vn.varaus v
         LEFT JOIN vn.asiakas a ON a.asiakas_id = v.asiakas_id
         LEFT JOIN vn.mokki m ON m.mokki_id = v.mokki_id
+        LEFT JOIN vn.alue al ON al.alue_id = m.alue_id
         WHERE v.varaus_id = @id
         """;
     await using var cmd = new SqlCommand(sql, conn);
@@ -596,6 +602,8 @@ app.MapGet("/api/varaus/{id:int}", async (int id) =>
         NullInt(rdr, "asiakas_id"),
         NullInt(rdr, "mokki_id"),
         Str(rdr, "mokkinimi"),
+        NullInt(rdr, "alue_id"),
+        Str(rdr, "aluen_nimi"),
         Str(rdr, "etunimi"),
         Str(rdr, "sukunimi"),
         NullDt(rdr, "varattu_pvm"),
@@ -1035,6 +1043,7 @@ record AsiakasSaveDto(string Etunimi, string Sukunimi, string Lahiosoite,
 record VarausPalveluDto(int PalveluId, string PalveluNimi, int Lkm);
 
 record VarausDto(int? VarausId, int? AsiakasId, int? MokkiId, string MokkiNimi,
+    int? AlueId, string AluenNimi,
     string Etunimi, string Sukunimi,
     DateTime? VarattuPvm, DateTime? VahvistusPvm,
     DateTime? VarattuAlkuPvm, DateTime? VarattuLoppuPvm,
