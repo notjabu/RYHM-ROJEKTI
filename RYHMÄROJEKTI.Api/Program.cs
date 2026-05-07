@@ -175,6 +175,20 @@ app.MapPut("/api/alue/{id:int}", async (int id, AlueSaveDto dto) =>
 app.MapDelete("/api/alue/{id:int}", async (int id) =>
 {
     await using var conn = await OpenDbAsync();
+    
+    // Check if alue has any palvelu records
+    const string checkSql = """
+        SELECT COUNT(*) FROM vn.palvelu WHERE alue_id = @id
+        """;
+    await using var checkCmd = new SqlCommand(checkSql, conn);
+    checkCmd.Parameters.AddWithValue("@id", id);
+    var count = (int)await checkCmd.ExecuteScalarAsync();
+
+    if (count > 0)
+    {
+        return Results.Conflict(new { error = "Aluetta ei voi poistaa, koska sillä on palveluja. Poista palvelut ensin." });
+    }
+
     const string sql = "DELETE FROM vn.alue WHERE alue_id = @id";
     await using var cmd = new SqlCommand(sql, conn);
     cmd.Parameters.AddWithValue("@id", id);
@@ -971,23 +985,6 @@ app.MapPut("/api/palvelu/{id:int}", async (int id, PalveluSaveDto dto) =>
 app.MapDelete("/api/palvelu/{id:int}", async (int id) =>
 {
     await using var conn = await OpenDbAsync();
-
-    // Check if palvelu is used in any CURRENT/UPCOMING reservations
-    const string checkSql = """
-        SELECT COUNT(*) 
-        FROM vn.varauksen_palvelut vp
-        INNER JOIN vn.varaus v ON v.varaus_id = vp.varaus_id
-        WHERE vp.palvelu_id = @id 
-          AND v.varattu_loppupvm >= CAST(GETDATE() AS date)
-        """;
-    await using var checkCmd = new SqlCommand(checkSql, conn);
-    checkCmd.Parameters.AddWithValue("@id", id);
-    var count = (int)await checkCmd.ExecuteScalarAsync();
-
-    if (count > 0)
-    {
-        return Results.Conflict(new { error = "Palvelua ei voi poistaa, koska se on liitetty aktiivisiin varauksiin." });
-    }
 
     // Soft delete: mark as deleted instead of removing from database
     const string softDeleteSql = "UPDATE vn.palvelu SET is_deleted = 1 WHERE palvelu_id = @id";
