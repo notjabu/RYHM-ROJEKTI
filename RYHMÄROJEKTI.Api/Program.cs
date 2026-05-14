@@ -493,7 +493,7 @@ app.MapGet("/api/varaus", async () =>
         ORDER BY v.varattu_alkupvm DESC
         """;
     await using var cmd = new SqlCommand(sql, conn);
-    await using var rdr = await cmd.ExecuteReaderAsync();  // First reader opened
+    await using var rdr = await cmd.ExecuteReaderAsync();
 
     var list = new List<VarausDto>();
     while (await rdr.ReadAsync())
@@ -522,15 +522,15 @@ app.MapGet("/api/varaus", async () =>
     if (list.Count > 0)
     {
         const string palveluSql = """
-            SELECT vp.varaus_id, vp.palvelu_id, p.nimi, vp.lkm
+            SELECT vp.varaus_id, vp.palvelu_id, COALESCE(vp.palvelu_nimi, p.nimi) as nimi, vp.lkm
             FROM vn.varauksen_palvelut vp
-            INNER JOIN vn.palvelu p ON p.palvelu_id = vp.palvelu_id
-            ORDER BY vp.varaus_id, p.nimi
+            LEFT JOIN vn.palvelu p ON p.palvelu_id = vp.palvelu_id
+            ORDER BY vp.varaus_id, nimi
             """;
         await using var cmd2 = new SqlCommand(palveluSql, conn);
-        await using var rdr2 = await cmd2.ExecuteReaderAsync();  // <-- EXCEPTION HERE
+        await using var rdr2 = await cmd2.ExecuteReaderAsync();
 
-        while (await rdr2.ReadAsync())  // <-- BUG: Using rdr instead of rdr2
+        while (await rdr2.ReadAsync())
         {
             var vid = Int(rdr2, "varaus_id");
             if (lookup.TryGetValue(vid, out var varaus))
@@ -569,8 +569,10 @@ app.MapPost("/api/varaus", async (VarausSaveDto dto) =>
         foreach (var p in dto.Palvelut)
         {
             const string insertPalvelu = """
-                INSERT INTO vn.varauksen_palvelut (varaus_id, palvelu_id, lkm)
-                VALUES (@varausId, @palveluId, @lkm)
+                INSERT INTO vn.varauksen_palvelut (varaus_id, palvelu_id, palvelu_nimi, palvelu_kuvaus, palvelu_hinta, palvelu_alv, lkm)
+                SELECT @varausId, @palveluId, p.nimi, p.kuvaus, p.hinta, p.alv, @lkm
+                FROM vn.palvelu p
+                WHERE p.palvelu_id = @palveluId
                 """;
             await using var cmd2 = new SqlCommand(insertPalvelu, conn, tx);
             cmd2.Parameters.AddWithValue("@varausId", varausId);
@@ -629,11 +631,11 @@ app.MapGet("/api/varaus/{id:int}", async (int id) =>
     rdr.Close();
 
     const string palveluSql = """
-        SELECT vp.palvelu_id, p.nimi, vp.lkm
+        SELECT vp.palvelu_id, COALESCE(vp.palvelu_nimi, p.nimi) as nimi, vp.lkm
         FROM vn.varauksen_palvelut vp
-        INNER JOIN vn.palvelu p ON p.palvelu_id = vp.palvelu_id
+        LEFT JOIN vn.palvelu p ON p.palvelu_id = vp.palvelu_id
         WHERE vp.varaus_id = @vid
-        ORDER BY p.nimi
+        ORDER BY nimi
         """;
     await using var cmd2 = new SqlCommand(palveluSql, conn);
     cmd2.Parameters.AddWithValue("@vid", id);
@@ -681,8 +683,10 @@ app.MapPut("/api/varaus/{id:int}", async (int id, VarausSaveDto dto) =>
         foreach (var p in dto.Palvelut)
         {
             const string insertPalvelu = """
-                INSERT INTO vn.varauksen_palvelut (varaus_id, palvelu_id, lkm)
-                VALUES (@varausId, @palveluId, @lkm)
+                INSERT INTO vn.varauksen_palvelut (varaus_id, palvelu_id, palvelu_nimi, palvelu_kuvaus, palvelu_hinta, palvelu_alv, lkm)
+                SELECT @varausId, @palveluId, p.nimi, p.kuvaus, p.hinta, p.alv, @lkm
+                FROM vn.palvelu p
+                WHERE p.palvelu_id = @palveluId
                 """;
             await using var cmd2 = new SqlCommand(insertPalvelu, conn, tx);
             cmd2.Parameters.AddWithValue("@varausId", id);
